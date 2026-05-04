@@ -181,6 +181,7 @@ const Products = () => {
                                                 price: product.price,
                                                 image: product.image,
                                                 category: product.category,
+                                                stock: product.stock,
                                             })}
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill={isInWishlist(product.id) ? '#E65A2E' : 'none'} stroke={isInWishlist(product.id) ? '#E65A2E' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">

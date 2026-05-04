@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './AdminDashboard.css';
+import { getAnalytics, type AnalyticsData } from '../services/adminApi';
+import { getApiErrorMessage } from '../services/api';
 
 // SVG Icons
 const IconTrendingUp = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>;
@@ -10,26 +12,25 @@ const IconDollarSign = () => <svg width="20" height="20" viewBox="0 0 24 24" fil
 const AdminAnalytics = () => {
   const [timeRange, setTimeRange] = useState('7d');
   const [isDownloading, setIsDownloading] = useState(false);
-  const salesData = useMemo(() => {
-    const multiplier = timeRange === '24h' ? 0.1 : timeRange === '30d' ? 1.5 : timeRange === '90d' ? 3.5 : 1;
-    return [
-      { month: 'Jan', sales: Math.floor(4500 * multiplier) },
-      { month: 'Feb', sales: Math.floor(5200 * multiplier) },
-      { month: 'Mar', sales: Math.floor(4800 * multiplier) },
-      { month: 'Apr', sales: Math.floor(6100 * multiplier) },
-      { month: 'May', sales: Math.floor(5900 * multiplier) },
-      { month: 'Jun', sales: Math.floor(7200 * multiplier) },
-    ];
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await getAnalytics(timeRange);
+        setAnalytics(data);
+      } catch (err) {
+        setError(getApiErrorMessage(err, 'Failed to load analytics'));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAnalytics();
   }, [timeRange]);
-
-  const maxSales = Math.max(...salesData.map(d => d.sales), 1);
-
-  const topProducts = [
-    { name: 'Red T-Shirt', sales: 450, growth: '+12%' },
-    { name: 'Blue Jeans', sales: 320, growth: '+8%' },
-    { name: 'Wireless Mouse', sales: 280, growth: '+15%' },
-    { name: 'Coffee Mug', sales: 210, growth: '-3%' },
-  ];
 
   const handleDownload = () => {
     setIsDownloading(true);
@@ -38,6 +39,8 @@ const AdminAnalytics = () => {
       alert('Analytics report has been generated and downloaded.');
     }, 1500);
   };
+
+  const formatCurrency = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 
   return (
     <div className="admin-content-container">
@@ -65,14 +68,19 @@ const AdminAnalytics = () => {
       </div>
 
       {/* Analytics Stats Grid */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '3rem' }}>Loading...</div>
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#EF4444' }}>{error}</div>
+      ) : analytics && (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="data-card" style={{ padding: '1.5rem', marginBottom: 0, borderRadius: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <span style={{ color: '#6B7280', fontSize: '0.875rem', fontWeight: 600 }}>Gross Sales</span>
             <div style={{ background: '#ECFDF5', color: '#10B981', padding: '6px', borderRadius: '6px' }}><IconDollarSign /></div>
           </div>
-          <h3 style={{ fontSize: '1.75rem', fontWeight: 700 }}>₹{(124560 * (timeRange === '24h' ? 0.05 : timeRange === '30d' ? 1.2 : 1)).toLocaleString()}</h3>
-          <p style={{ color: '#10B981', fontSize: '0.875rem', marginTop: '5px', fontWeight: 600 }}>+12.3% <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs last period</span></p>
+          <h3 style={{ fontSize: '1.75rem', fontWeight: 700 }}>{formatCurrency(analytics.grossSales)}</h3>
+          <p style={{ color: analytics.salesGrowth >= 0 ? '#10B981' : '#EF4444', fontSize: '0.875rem', marginTop: '5px', fontWeight: 600 }}>{analytics.salesGrowth >= 0 ? '+' : ''}{analytics.salesGrowth}% <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs last period</span></p>
         </div>
 
         <div className="data-card" style={{ padding: '1.5rem', marginBottom: 0, borderRadius: '12px' }}>
@@ -80,8 +88,8 @@ const AdminAnalytics = () => {
             <span style={{ color: '#6B7280', fontSize: '0.875rem', fontWeight: 600 }}>Total Orders</span>
             <div style={{ background: '#EEF2FF', color: '#4F46E5', padding: '6px', borderRadius: '6px' }}><IconShoppingBag /></div>
           </div>
-          <h3 style={{ fontSize: '1.75rem', fontWeight: 700 }}>{Math.floor(856 * (timeRange === '24h' ? 0.05 : timeRange === '30d' ? 1.2 : 1))}</h3>
-          <p style={{ color: '#10B981', fontSize: '0.875rem', marginTop: '5px', fontWeight: 600 }}>+5.7% <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs last period</span></p>
+          <h3 style={{ fontSize: '1.75rem', fontWeight: 700 }}>{analytics.totalOrders}</h3>
+          <p style={{ color: analytics.ordersGrowth >= 0 ? '#10B981' : '#EF4444', fontSize: '0.875rem', marginTop: '5px', fontWeight: 600 }}>{analytics.ordersGrowth >= 0 ? '+' : ''}{analytics.ordersGrowth}% <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs last period</span></p>
         </div>
 
         <div className="data-card" style={{ padding: '1.5rem', marginBottom: 0, borderRadius: '12px' }}>
@@ -89,8 +97,8 @@ const AdminAnalytics = () => {
             <span style={{ color: '#6B7280', fontSize: '0.875rem', fontWeight: 600 }}>Store Visits</span>
             <div style={{ background: '#FEF3C7', color: '#D97706', padding: '6px', borderRadius: '6px' }}><IconUsers /></div>
           </div>
-          <h3 style={{ fontSize: '1.75rem', fontWeight: 700 }}>{Math.floor(12450 * (timeRange === '24h' ? 0.05 : timeRange === '30d' ? 1.2 : 1)).toLocaleString()}</h3>
-          <p style={{ color: '#EF4444', fontSize: '0.875rem', marginTop: '5px', fontWeight: 600 }}>-2.1% <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs last period</span></p>
+          <h3 style={{ fontSize: '1.75rem', fontWeight: 700 }}>{analytics.storeVisits.toLocaleString()}</h3>
+          <p style={{ color: analytics.visitsGrowth >= 0 ? '#10B981' : '#EF4444', fontSize: '0.875rem', marginTop: '5px', fontWeight: 600 }}>{analytics.visitsGrowth >= 0 ? '+' : ''}{analytics.visitsGrowth}% <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs last period</span></p>
         </div>
 
         <div className="data-card" style={{ padding: '1.5rem', marginBottom: 0, borderRadius: '12px' }}>
@@ -98,32 +106,37 @@ const AdminAnalytics = () => {
             <span style={{ color: '#6B7280', fontSize: '0.875rem', fontWeight: 600 }}>Conversion Rate</span>
             <div style={{ background: '#FCE7F3', color: '#DB2777', padding: '6px', borderRadius: '6px' }}><IconTrendingUp /></div>
           </div>
-          <h3 style={{ fontSize: '1.75rem', fontWeight: 700 }}>6.8%</h3>
-          <p style={{ color: '#10B981', fontSize: '0.875rem', marginTop: '5px', fontWeight: 600 }}>+0.4% <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs last period</span></p>
+          <h3 style={{ fontSize: '1.75rem', fontWeight: 700 }}>{analytics.conversionRate}%</h3>
+          <p style={{ color: analytics.conversionGrowth >= 0 ? '#10B981' : '#EF4444', fontSize: '0.875rem', marginTop: '5px', fontWeight: 600 }}>{analytics.conversionGrowth >= 0 ? '+' : ''}{analytics.conversionGrowth}% <span style={{ color: '#9CA3AF', fontWeight: 400 }}>vs last period</span></p>
         </div>
       </div>
+      )}
 
+      {analytics && (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
         {/* Sales Chart (CSS Based) */}
         <div className="data-card" style={{ padding: '2rem', borderRadius: '12px' }}>
           <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '2rem', color: '#111827' }}>Monthly Sales Revenue</h3>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '250px', paddingBottom: '30px', borderBottom: '2px solid #F3F4F6' }}>
-            {salesData.map((data, index) => (
-              <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '12%', height: '100%', justifyContent: 'flex-end', position: 'relative' }}>
-                <div
-                  title={`₹${data.sales}`}
-                  style={{
-                    width: '100%',
-                    height: `${(data.sales / maxSales) * 100}%`,
-                    background: 'linear-gradient(to top, #4F46E5, #818CF8)',
-                    borderRadius: '6px 6px 0 0',
-                    transition: 'height 0.5s ease-out',
-                    cursor: 'pointer'
-                  }}
-                />
-                <span style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '12px', fontWeight: 600 }}>{data.month}</span>
-              </div>
-            ))}
+            {(() => {
+              const maxSales = Math.max(...analytics.salesChart.map(d => d.sales), 1);
+              return analytics.salesChart.map((data, index) => (
+                <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '12%', height: '100%', justifyContent: 'flex-end', position: 'relative' }}>
+                  <div
+                    title={formatCurrency(data.sales)}
+                    style={{
+                      width: '100%',
+                      height: `${(data.sales / maxSales) * 100}%`,
+                      background: 'linear-gradient(to top, #4F46E5, #818CF8)',
+                      borderRadius: '6px 6px 0 0',
+                      transition: 'height 0.5s ease-out',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '12px', fontWeight: 600 }}>{data.month}</span>
+                </div>
+              ));
+            })()}
           </div>
         </div>
 
@@ -134,7 +147,7 @@ const AdminAnalytics = () => {
             <span style={{ fontSize: '0.75rem', color: '#6B7280', fontWeight: 600 }}>By Sales Volume</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {topProducts.map((product, index) => (
+            {analytics.topProducts.map((product, index) => (
               <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#4B5563', fontSize: '0.875rem' }}>
@@ -152,10 +165,10 @@ const AdminAnalytics = () => {
                     borderRadius: '9999px',
                     fontSize: '0.75rem',
                     fontWeight: 700,
-                    background: product.growth.startsWith('+') ? '#DCFCE7' : '#FEE2E2',
-                    color: product.growth.startsWith('+') ? '#15803D' : '#B91C1C'
+                    background: product.growth >= 0 ? '#DCFCE7' : '#FEE2E2',
+                    color: product.growth >= 0 ? '#15803D' : '#B91C1C'
                   }}>
-                    {product.growth}
+                    {product.growth >= 0 ? '+' : ''}{product.growth}%
                   </span>
                 </div>
               </div>
@@ -166,6 +179,7 @@ const AdminAnalytics = () => {
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 };

@@ -10,6 +10,7 @@ export interface WishlistItem {
     price: string | number;
     image: string;
     category?: string;
+    stock?: number;
 }
 
 interface WishlistContextType {

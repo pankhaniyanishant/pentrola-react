@@ -101,6 +101,54 @@ export const updateAdminUser = async (
     return data;
 };
 
+export interface DashboardStats {
+    totalSales: number;
+    totalOrders: number;
+    totalCustomers: number;
+    revenueGrowth: number;
+    salesGrowth: number;
+    ordersGrowth: number;
+    customersGrowth: number;
+    recentOrders: {
+        _id: string;
+        status: string;
+        totalPrice: number;
+        createdAt: string;
+        user?: { name?: string };
+        guestEmail?: string;
+    }[];
+    recentActivity: {
+        id: string;
+        type: string;
+        message: string;
+        time: string;
+        status: string;
+    }[];
+}
+
+export const getDashboardStats = async (timeRange: string = 'Today') => {
+    const { data } = await api.get<DashboardStats>(`/admin/dashboard/stats?range=${timeRange}`);
+    return data;
+};
+
+export interface AnalyticsData {
+    grossSales: number;
+    totalOrders: number;
+    storeVisits: number;
+    conversionRate: number;
+    salesGrowth: number;
+    ordersGrowth: number;
+    visitsGrowth: number;
+    conversionGrowth: number;
+    salesChart: { month: string; sales: number }[];
+    topProducts: { name: string; sales: number; growth: number }[];
+}
+
+export const getAnalytics = async (timeRange: string = '7d') => {
+    const { data } = await api.get<AnalyticsData>(`/admin/analytics?range=${timeRange}`);
+    return data;
+};
+
 export const deleteAdminUser = async (id: string) => {
     await api.delete(`/auth/users/${id}`);
 };

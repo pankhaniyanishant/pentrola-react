@@ -67,17 +67,23 @@ const Wishlist = () => {
                                         <div className="wishlist-card-actions">
                                             <button
                                                 className="add-to-cart-btn"
+                                                disabled={!item.stock}
                                                 onClick={() => {
                                                     addToCart({
                                                         id: item.id as number,
                                                         title: item.title,
                                                         price: formatPrice(item.price),
                                                         image: item.image,
-                                                        quantity: 1
+                                                        quantity: 1,
+                                                        stock: item.stock,
                                                     });
                                                 }}
+                                                style={{
+                                                    opacity: !item.stock ? 0.6 : 1,
+                                                    cursor: item.stock ? 'pointer' : 'not-allowed',
+                                                }}
                                             >
-                                                Add to Cart
+                                                {item.stock ? 'Add to Cart' : 'Out of Stock'}
                                             </button>
                                         </div>
                                     </div>
