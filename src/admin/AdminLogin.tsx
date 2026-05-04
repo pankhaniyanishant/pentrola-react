@@ -1,28 +1,38 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './AdminLogin.css';
 
 const AdminLogin = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, logout, isLoggedIn, isAdmin, isLoading } = useAuth();
 
-    const handleLogin = (e: FormEvent) => {
+    useEffect(() => {
+        if (!isLoading && isLoggedIn && isAdmin) {
+            navigate('/admin/dashboard', { replace: true });
+        }
+    }, [isLoading, isLoggedIn, isAdmin, navigate]);
+
+    const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
-
-        // Mock Authentication Logic
-        if (username === 'admin' && password === 'admin123') {
-            // Success
-            // In a real app, you would set a token in localStorage/cookies here
-            login('admin@example.com', 'admin123');
+        setLoading(true);
+        try {
+            const loggedInUser = await login(email, password);
+            if (!loggedInUser.isAdmin) {
+                await logout();
+                setError('This account does not have admin access.');
+                return;
+            }
             navigate('/admin/dashboard');
-        } else {
-            // Failure
+        } catch {
             setError('Invalid username or password. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -42,13 +52,13 @@ const AdminLogin = () => {
 
                 <form onSubmit={handleLogin} className="admin-login-form">
                     <div className="form-group">
-                        <label htmlFor="username">Username</label>
+                        <label htmlFor="username">Email</label>
                         <input
-                            type="text"
+                            type="email"
                             id="username"
-                            placeholder="Enter username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Enter email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
@@ -66,7 +76,9 @@ const AdminLogin = () => {
 
                     {error && <div className="admin-login-error">{error}</div>}
 
-                    <button type="submit" className="btn-admin-login">Login</button>
+                    <button type="submit" className="btn-admin-login" disabled={loading}>
+                        {loading ? 'Logging in...' : 'Login'}
+                    </button>
                 </form>
 
                 <div className="admin-login-footer">

@@ -1,18 +1,23 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { api, getApiErrorMessage } from '../services/api';
 
 export interface User {
     uid: string;
     email: string | null;
     displayName: string | null;
+    isAdmin: boolean;
+    token?: string;
 }
 
 interface AuthContextType {
     user: User | null;
     isLoggedIn: boolean;
+    isAdmin: boolean;
     isLoading: boolean;
-    login: (email: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<User>;
     logout: () => Promise<void>;
     register: (fullName: string, email: string, password: string) => Promise<void>;
+    updateProfile: (payload: { name: string; email: string; password?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,7 +30,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             try {
-                setUser(JSON.parse(storedUser));
+                const parsed = JSON.parse(storedUser) as Partial<User>;
+                if (parsed.uid && parsed.email) {
+                    setUser({
+                        uid: parsed.uid,
+                        email: parsed.email,
+                        displayName: parsed.displayName || null,
+                        token: parsed.token,
+                        isAdmin: !!parsed.isAdmin,
+                    });
+                } else {
+                    setUser(null);
+                }
             } catch {
                 setUser(null);
             }
@@ -33,22 +49,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
     }, []);
 
+    const saveUser = (nextUser: User) => {
+        setUser(nextUser);
+        localStorage.setItem('user', JSON.stringify(nextUser));
+    };
+
+    const normalizeUser = (data: {
+        uid: string;
+        email: string;
+        name: string;
+        token?: string;
+        isAdmin?: boolean;
+    }): User => ({
+        uid: data.uid,
+        email: data.email,
+        displayName: data.name,
+        token: data.token,
+        isAdmin: !!data.isAdmin,
+    });
+
     const login = async (email: string, password: string) => {
         setIsLoading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                const mockUser = { uid: data.uid, email: data.email, displayName: data.name };
-                setUser(mockUser);
-                localStorage.setItem('user', JSON.stringify(mockUser));
-            } else {
-                throw new Error(data.message || 'Login failed');
-            }
+            const { data } = await api.post('/auth/login', { email, password });
+            const authUser = normalizeUser(data);
+            saveUser(authUser);
+            return authUser;
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error, 'Login failed'));
         } finally {
             setIsLoading(false);
         }
@@ -62,32 +90,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const register = async (fullName: string, email: string, password: string) => {
         setIsLoading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: fullName, email, password })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                const mockUser = { uid: data.uid, email: data.email, displayName: data.name };
-                setUser(mockUser);
-                localStorage.setItem('user', JSON.stringify(mockUser));
-            } else {
-                throw new Error(data.message || 'Registration failed');
-            }
+            const { data } = await api.post('/auth/register', { name: fullName, email, password });
+            saveUser(normalizeUser(data));
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error, 'Registration failed'));
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const updateProfile = async ({ name, email, password }: { name: string; email: string; password?: string }) => {
+        const payload = password ? { name, email, password } : { name, email };
+        const { data } = await api.put('/auth/profile', payload);
+        saveUser(normalizeUser(data));
     };
 
     return (
         <AuthContext.Provider value={{
             user,
             isLoggedIn: !!user,
+            isAdmin: !!user?.isAdmin,
             isLoading,
             login,
             logout,
-            register
+            register,
+            updateProfile
         }}>
             {children}
         </AuthContext.Provider>

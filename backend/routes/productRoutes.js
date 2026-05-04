@@ -1,5 +1,6 @@
 const express = require('express');
 const Product = require('../models/Product');
+const { protect, admin } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -11,11 +12,48 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', protect, admin, async (req, res) => {
     try {
         const product = new Product(req.body);
         const createdProduct = await product.save();
         res.status(201).json(createdProduct);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.put('/:id', protect, admin, async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        product.title = req.body.title ?? product.title;
+        product.price = req.body.price ?? product.price;
+        product.description = req.body.description ?? product.description;
+        product.image = req.body.image ?? product.image;
+        product.category = req.body.category ?? product.category;
+        product.stock = req.body.stock ?? product.stock;
+        product.isBestseller = req.body.isBestseller ?? product.isBestseller;
+
+        const updatedProduct = await product.save();
+        res.json(updatedProduct);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.delete('/:id', protect, admin, async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        await product.deleteOne();
+        res.json({ message: 'Product removed' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

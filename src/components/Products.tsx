@@ -1,79 +1,88 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { api } from '../services/api';
 import './Products.css';
-import './Bestsellers.css'; // Reusing grid and card CSS
+import './Bestsellers.css';
+
+interface Product {
+    _id: string;
+    id: string;
+    title: string;
+    category: string;
+    price: number;
+    originalPrice?: number;
+    image: string;
+    stock: number;
+}
+
+const formatInr = (value: number) => `₹${value.toLocaleString('en-IN')}`;
+
+const normalizeProduct = (raw: Partial<Product> & { _id?: string }) => ({
+    _id: raw._id || '',
+    id: raw._id || '',
+    title: raw.title || 'Untitled Product',
+    category: raw.category || 'Uncategorized',
+    price: Number(raw.price) || 0,
+    originalPrice: raw.originalPrice ? Number(raw.originalPrice) : undefined,
+    image: raw.image || '/hero-sequence.png',
+    stock: Number(raw.stock) || 0,
+});
 
 const Products = () => {
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeCategory, setActiveCategory] = useState('All');
     const [sortOption, setSortOption] = useState('featured');
+    const [initialProducts, setInitialProducts] = useState<Product[]>([]);
+    const activeCategory = searchParams.get('category') || 'All';
 
     useEffect(() => {
-        const cat = searchParams.get('category');
-        if (cat) {
-            setActiveCategory(cat);
-        }
-    }, [searchParams]);
-    const [initialProducts, setInitialProducts] = useState<any[]>([]);
-
-    useEffect(() => {
-        fetch('http://localhost:5000/api/products')
-            .then(res => res.json())
-            .then(data => {
-                const mapped = data.map((p: any) => ({ ...p, id: p._id }));
+        api.get('/products')
+            .then(({ data }) => {
+                const mapped = (Array.isArray(data) ? data : []).map((item) => normalizeProduct(item as Partial<Product> & { _id?: string }));
                 setInitialProducts(mapped);
             })
             .catch(console.error);
     }, []);
 
-    const categories = ['All', ...Array.from(new Set(initialProducts.map(p => p.category)))];
+    const categories = useMemo(() => {
+        const uniqueCategories = Array.from(new Set(initialProducts.map((p) => p.category).filter(Boolean)));
+        return ['All', ...uniqueCategories];
+    }, [initialProducts]);
 
     const filteredProducts = useMemo(() => {
         const priceFilter = searchParams.get('price');
 
-        let result = initialProducts.filter(p => {
+        let result = initialProducts.filter((p) => {
             const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
             const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) || p.category.toLowerCase().includes(searchTerm.toLowerCase());
 
             let matchesPrice = true;
             if (priceFilter) {
-                const [min, max] = priceFilter.split('-').map(v => v === 'max' ? Infinity : parseInt(v));
-                const priceNum = parseInt(p.price.replace(/[^\d]/g, ''));
-                matchesPrice = priceNum >= min && priceNum <= max;
+                const [minStr, maxStr] = priceFilter.split('-');
+                const min = Number(minStr) || 0;
+                const max = maxStr === 'max' ? Number.POSITIVE_INFINITY : Number(maxStr) || Number.POSITIVE_INFINITY;
+                matchesPrice = p.price >= min && p.price <= max;
             }
 
             return matchesCategory && matchesSearch && matchesPrice;
         });
 
         if (sortOption === 'price-asc') {
-            result.sort((a, b) => parseInt(a.price.replace(/[^\d]/g, '')) - parseInt(b.price.replace(/[^\d]/g, '')));
+            result = [...result].sort((a, b) => a.price - b.price);
         } else if (sortOption === 'price-desc') {
-            result.sort((a, b) => parseInt(b.price.replace(/[^\d]/g, '')) - parseInt(a.price.replace(/[^\d]/g, '')));
+            result = [...result].sort((a, b) => b.price - a.price);
         } else if (sortOption === 'newest') {
-            result.sort((a, b) => b.id - a.id);
+            result = [...result].sort((a, b) => b.id.localeCompare(a.id));
         }
 
         return result;
-    }, [searchTerm, activeCategory, sortOption, searchParams]);
-
-    const renderStars = (rating: number) => {
-        const stars = [];
-        for (let i = 1; i <= 5; i++) {
-            stars.push(
-                <svg key={i} className={`star ${i <= rating ? 'filled' : i - 0.5 <= rating ? 'half' : 'empty'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-            );
-        }
-        return stars;
-    };
+    }, [initialProducts, searchTerm, activeCategory, sortOption, searchParams]);
 
     return (
         <div className="products-page">
@@ -82,7 +91,7 @@ const Products = () => {
             <main className="products-main">
                 <div className="products-header">
                     <span className="section-subtitle">BROWSE COLLECTION</span>
-                    <h1 className="section-title">All Products {searchParams.get('price') && `(Filtered by Price)`}</h1>
+                    <h1 className="section-title">All Products {searchParams.get('price') && '(Filtered by Price)'}</h1>
                     <p className="section-desc">
                         Discover our complete range of premium toys, tools, and art supplies. Quality you can trust for every project.
                     </p>
@@ -126,11 +135,19 @@ const Products = () => {
                     </div>
 
                     <div className="categories-list">
-                        {categories.map(cat => (
+                        {categories.map((cat) => (
                             <button
                                 key={cat}
                                 className={`category-pill ${activeCategory === cat ? 'active' : ''}`}
-                                onClick={() => setActiveCategory(cat)}
+                                onClick={() => {
+                                    const nextParams = new URLSearchParams(searchParams);
+                                    if (cat === 'All') {
+                                        nextParams.delete('category');
+                                    } else {
+                                        nextParams.set('category', cat);
+                                    }
+                                    setSearchParams(nextParams);
+                                }}
                             >
                                 {cat}
                             </button>
@@ -150,57 +167,46 @@ const Products = () => {
                                 <div key={product.id} className="product-card">
                                     <div className="product-image-container">
                                         <img src={product.image} alt={product.title} />
-
                                         <div className="badges-top-left">
-                                            {product.topRated && <span className="badge new-badge" style={{ backgroundColor: '#E65A2E', color: 'white' }}>Top Rated</span>}
                                             {product.stock === 0 && <span className="badge out-of-stock" style={{ backgroundColor: '#9CA3AF', color: 'white' }}>Out of Stock</span>}
                                             {product.stock > 0 && product.stock <= 8 && <span className="badge out-of-stock" style={{ backgroundColor: '#F59E0B', color: 'white' }}>Low Stock</span>}
                                         </div>
 
-                                        {/* Favorite Button */}
                                         <button
                                             className={`favorite-btn ${isInWishlist(product.id) ? 'active' : ''}`}
-                                            aria-label={isInWishlist(product.id) ? "Remove from favorites" : "Add to favorites"}
+                                            aria-label={isInWishlist(product.id) ? 'Remove from favorites' : 'Add to favorites'}
                                             onClick={() => toggleWishlist({
                                                 id: product.id,
                                                 title: product.title,
                                                 price: product.price,
                                                 image: product.image,
-                                                category: product.category
+                                                category: product.category,
                                             })}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill={isInWishlist(product.id) ? "#E65A2E" : "none"} stroke={isInWishlist(product.id) ? "#E65A2E" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill={isInWishlist(product.id) ? '#E65A2E' : 'none'} stroke={isInWishlist(product.id) ? '#E65A2E' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                             </svg>
                                         </button>
                                     </div>
+
                                     <div className="product-info" style={{ textAlign: 'left' }}>
                                         <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{product.category}</span>
                                         <h3 className="product-title" style={{ marginTop: '2px', marginBottom: '4px' }}>{product.title}</h3>
-                                        <div className="product-rating">
-                                            <div className="stars">
-                                                {renderStars(product.rating)}
-                                            </div>
-                                            <span className="current-price" style={{ fontSize: '13px', marginLeft: '2px' }}>{product.rating}</span>
-                                            <span className="review-count">({product.reviews})</span>
-                                        </div>
                                         <div className="product-price">
-                                            <span className="current-price">{product.price}</span>
-                                            <span className="original-price">{product.originalPrice}</span>
-                                            {product.discount && <span style={{ color: '#E65A2E', fontSize: '12px', fontWeight: 'bold', marginLeft: '4px' }}>{product.discount}</span>}
+                                            <span className="current-price">{formatInr(product.price)}</span>
+                                            {product.originalPrice && <span className="original-price">{formatInr(product.originalPrice)}</span>}
                                         </div>
                                         <button
                                             className="add-to-cart-btn"
                                             disabled={product.stock === 0}
                                             onClick={() => {
-                                                const priceNum = parseInt(product.price.replace(/[^\d]/g, ''), 10);
                                                 addToCart({
                                                     id: product.id,
                                                     title: product.title,
-                                                    price: priceNum,
+                                                    price: product.price,
                                                     image: product.image,
                                                     quantity: 1,
-                                                    stock: product.stock
+                                                    stock: product.stock,
                                                 });
                                             }}
                                             style={{

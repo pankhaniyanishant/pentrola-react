@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, type ReactNode } from 'react';
+import { api } from '../services/api';
 
 
 
@@ -30,9 +31,8 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            fetch(`http://localhost:5000/api/wishlist/${user.uid}`)
-                .then(res => res.json())
-                .then(data => {
+            api.get(`/wishlist/${user.uid}`)
+                .then(({ data }) => {
                     if (data && data.items) setWishlistItems(data.items);
                 })
                 .catch(err => console.error('Error loading wishlist', err));
@@ -54,11 +54,8 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            fetch(`http://localhost:5000/api/wishlist/${user.uid}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: wishlistItems })
-            }).catch(err => console.error('Error saving wishlist', err));
+            api.post(`/wishlist/${user.uid}`, { items: wishlistItems })
+                .catch(err => console.error('Error saving wishlist', err));
         }
     }, [wishlistItems]);
 

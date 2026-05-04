@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 const placeOrder = async (orderData: any) => {
     const payload = {
         user: orderData.userId !== 'guest' ? orderData.userId : undefined,
@@ -26,13 +27,8 @@ const placeOrder = async (orderData: any) => {
         totalPrice: orderData.grandTotal
     };
 
-    const res = await fetch('http://localhost:5000/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw new Error('Order placement failed');
-    return res.json(); 
+    const { data } = await api.post('/orders', payload);
+    return data;
 };
 import Navbar from './Navbar';
 import Footer from './Footer';

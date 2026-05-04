@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { INITIAL_ACTIVITY } from './AdminDashboard';
+import { INITIAL_ACTIVITY } from './adminData';
 import './AdminActivity.css';
+
+type Activity = (typeof INITIAL_ACTIVITY)[number];
 
 const AdminActivity = () => {
     const navigate = useNavigate();
-    const [selectedActivity, setSelectedActivity] = useState<any>(null);
+    const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
     const [filterType, setFilterType] = useState('All Types');
 
     const closePortal = () => setSelectedActivity(null);

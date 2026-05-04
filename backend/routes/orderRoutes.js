@@ -1,5 +1,6 @@
 const express = require('express');
 const Order = require('../models/Order');
+const { protect, admin } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
@@ -21,8 +22,11 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/user/:userId', async (req, res) => {
+router.get('/user/:userId', protect, async (req, res) => {
     try {
+        if (!req.user.isAdmin && req.user._id.toString() !== req.params.userId) {
+            return res.status(403).json({ message: 'Not authorized to view these orders' });
+        }
         const orders = await Order.find({ user: req.params.userId }).populate('product');
         res.json(orders);
     } catch (error) {
@@ -30,7 +34,7 @@ router.get('/user/:userId', async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', protect, admin, async (req, res) => {
     try {
         const orders = await Order.find({}).populate('user', 'id name email');
         res.json(orders);
@@ -39,7 +43,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', protect, admin, async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
         if (order) {

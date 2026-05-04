@@ -26,6 +26,7 @@ import AdminActivity from './admin/AdminActivity';
 import OrderHistory from './components/OrderHistory';
 import Invoice from './components/Invoice';
 import Wishlist from './components/Wishlist';
+import Profile from './components/Profile';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
               <Route path="/orders" element={<OrderHistory />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/invoice/:id" element={<Invoice />} />
+              <Route path="/profile" element={<Profile />} />
 
               {/* Admin Portal Nested Layout */}
               <Route path="/admin/dashboard" element={

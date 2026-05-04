@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './AdminDashboard.css';
+import {
+    createAdminProduct,
+    deleteAdminProduct,
+    getAdminProducts,
+    updateAdminProduct,
+    type AdminProduct,
+} from '../services/adminApi';
+import { getApiErrorMessage } from '../services/api';
 
-// SVG Icons
 const IconSearch = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8" />
@@ -27,107 +34,114 @@ const IconView = () => (
   </svg>
 );
 
-// Mock inventory data
-const MOCK_INVENTORY = [
-  { id: 1, name: 'sequence', sku: 'RTS-001', quantity: 120, price: 19.99, category: 'Toy', lastUpdated: '2026-03-15' },
-  { id: 2, name: 'flip & match', sku: 'BJ-002', quantity: 8, price: 49.5, category: 'Apparel', lastUpdated: '2026-03-16' },
-  { id: 3, name: 'kids gun', sku: 'WM-003', quantity: 200, price: 25.0, category: 'Electronics', lastUpdated: '2026-03-14' },
-  { id: 4, name: 'Artist Brush Set', sku: 'CM-004', quantity: 0, price: 9.99, category: 'Home', lastUpdated: '2026-03-17' },
-  { id: 5, name: 'premium can', sku: 'NB-005', quantity: 80, price: 3.5, category: 'Stationery', lastUpdated: '2026-03-10' },
-  { id: 6, name: 'colorful blocks', sku: 'RS-006', quantity: 25, price: 89.99, category: 'Footwear', lastUpdated: '2026-03-18' },
-  { id: 7, name: 'train set bucket', sku: 'DL-007', quantity: 15, price: 29.99, category: 'Electronics', lastUpdated: '2026-03-12' },
-];
+type InventoryForm = {
+  title: string;
+  category: string;
+  stock: string;
+  price: string;
+  description: string;
+};
+
+const INITIAL_FORM: InventoryForm = {
+  title: '',
+  category: 'Educational',
+  stock: '0',
+  price: '0',
+  description: '',
+};
 
 const AdminInventory = () => {
-  const [items, setItems] = useState(MOCK_INVENTORY);
+  const [items, setItems] = useState<AdminProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [editingItemId, setEditingItemId] = useState<number | null>(null);
-  const [viewingItemId, setViewingItemId] = useState<number | null>(null);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [viewingItemId, setViewingItemId] = useState<string | null>(null);
+  const [newItem, setNewItem] = useState<InventoryForm>(INITIAL_FORM);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
-  const [newItem, setNewItem] = useState({
-    name: '',
-    sku: '',
-    quantity: 0,
-    price: 0,
-    category: 'Apparel'
-  });
-
-  const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.sku.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this inventory item?')) {
-      setItems(items.filter(i => i.id !== id));
+  const loadItems = async () => {
+    setLoading(true);
+    try {
+      const data = await getAdminProducts();
+      setItems(data);
+      setError('');
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Failed to load inventory'));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEdit = (item: any) => {
-    setEditingItemId(item.id);
+  useEffect(() => {
+    loadItems();
+  }, []);
+
+  const filteredItems = useMemo(() => items.filter((item) =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item._id.toLowerCase().includes(searchTerm.toLowerCase())
+  ), [items, searchTerm]);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this inventory item?')) return;
+    try {
+      await deleteAdminProduct(id);
+      setItems((prev) => prev.filter((i) => i._id !== id));
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Failed to delete item'));
+    }
+  };
+
+  const handleEdit = (item: AdminProduct) => {
+    setEditingItemId(item._id);
     setNewItem({
-      name: item.name,
-      sku: item.sku,
-      quantity: item.quantity,
-      price: item.price,
-      category: item.category
+      title: item.title,
+      category: item.category || 'Educational',
+      stock: item.stock.toString(),
+      price: item.price.toString(),
+      description: item.description || '',
     });
     setShowModal(true);
   };
 
-  const handleView = (id: number) => {
+  const handleView = (id: string) => {
     setViewingItemId(id);
     setShowViewModal(true);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewItem(prev => ({
-      ...prev,
-      [name]: name === 'quantity' || name === 'price' ? parseFloat(value) : value
-    }));
-  };
-
-  const handleSaveItem = (e: React.FormEvent) => {
+  const handleSaveItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
+    const payload = {
+      title: newItem.title,
+      category: newItem.category,
+      stock: parseInt(newItem.stock, 10) || 0,
+      price: parseFloat(newItem.price) || 0,
+      description: newItem.description || newItem.title,
+    };
 
-    if (!newItem.name || !newItem.sku) {
-      alert("Please fill in all required fields.");
-      return;
+    try {
+      if (editingItemId) {
+        const updated = await updateAdminProduct(editingItemId, payload);
+        setItems((prev) => prev.map((i) => (i._id === editingItemId ? updated : i)));
+      } else {
+        const created = await createAdminProduct(payload);
+        setItems((prev) => [created, ...prev]);
+      }
+      setShowModal(false);
+      resetForm();
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Failed to save inventory item'));
+    } finally {
+      setSaving(false);
     }
-
-    if (editingItemId !== null) {
-      // Update existing item
-      setItems(items.map(p => p.id === editingItemId ? {
-        ...p,
-        ...newItem,
-        lastUpdated: new Date().toISOString().split('T')[0]
-      } : p));
-    } else {
-      // Add new item
-      const itemToAdd = {
-        id: items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1,
-        ...newItem,
-        lastUpdated: new Date().toISOString().split('T')[0]
-      };
-      setItems([itemToAdd, ...items]);
-    }
-
-    setShowModal(false);
-    resetForm();
   };
 
   const resetForm = () => {
     setEditingItemId(null);
-    setNewItem({
-      name: '',
-      sku: '',
-      quantity: 0,
-      price: 0,
-      category: 'Apparel'
-    });
+    setNewItem(INITIAL_FORM);
   };
 
   const getStatusBadge = (quantity: number) => {
@@ -136,7 +150,7 @@ const AdminInventory = () => {
     return <span className="badge-pill badge-success">In Stock</span>;
   };
 
-  const viewingItem = items.find(i => i.id === viewingItemId);
+  const viewingItem = items.find((i) => i._id === viewingItemId);
 
   return (
     <div className="admin-content-container">
@@ -150,7 +164,8 @@ const AdminInventory = () => {
         </button>
       </div>
 
-      {/* Add/Edit Modal */}
+      {error && <div className="empty-state" style={{ marginBottom: '12px', color: '#B91C1C' }}>{error}</div>}
+
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -165,34 +180,20 @@ const AdminInventory = () => {
                   <label>Item Name*</label>
                   <input
                     type="text"
-                    name="name"
-                    value={newItem.name}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Cotton T-Shirt"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>SKU*</label>
-                  <input
-                    type="text"
-                    name="sku"
-                    value={newItem.sku}
-                    onChange={handleInputChange}
-                    placeholder="SKU-001"
+                    value={newItem.title}
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, title: e.target.value }))}
                     required
                   />
                 </div>
 
                 <div className="form-group">
                   <label>Category</label>
-                  <select name="category" value={newItem.category} onChange={handleInputChange}>
-                    <option value="Apparel">Apparel</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Home">Home</option>
-                    <option value="Stationery">Stationery</option>
-                    <option value="Footwear">Footwear</option>
+                  <select value={newItem.category} onChange={(e) => setNewItem((prev) => ({ ...prev, category: e.target.value }))}>
+                    <option value="Educational">Educational</option>
+                    <option value="Building Toys">Building Toys</option>
+                    <option value="Puzzles">Puzzles</option>
+                    <option value="Action Figures">Action Figures</option>
+                    <option value="Arts & Crafts">Arts & Crafts</option>
                   </select>
                 </div>
 
@@ -200,9 +201,8 @@ const AdminInventory = () => {
                   <label>Quantity</label>
                   <input
                     type="number"
-                    name="quantity"
-                    value={newItem.quantity}
-                    onChange={handleInputChange}
+                    value={newItem.stock}
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, stock: e.target.value }))}
                     min="0"
                   />
                 </div>
@@ -211,19 +211,27 @@ const AdminInventory = () => {
                   <label>Price (₹)</label>
                   <input
                     type="number"
-                    name="price"
                     value={newItem.price}
-                    onChange={handleInputChange}
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, price: e.target.value }))}
                     step="0.01"
                     min="0"
+                  />
+                </div>
+
+                <div className="form-group span-2">
+                  <label>Description</label>
+                  <input
+                    type="text"
+                    value={newItem.description}
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, description: e.target.value }))}
                   />
                 </div>
               </div>
 
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn-save">
-                  {editingItemId !== null ? 'Update Item' : 'Save Item'}
+                <button type="submit" className="btn-save" disabled={saving}>
+                  {saving ? 'Saving...' : (editingItemId !== null ? 'Update Item' : 'Save Item')}
                 </button>
               </div>
             </form>
@@ -231,7 +239,6 @@ const AdminInventory = () => {
         </div>
       )}
 
-      {/* View Modal */}
       {showViewModal && viewingItem && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -243,30 +250,18 @@ const AdminInventory = () => {
             <div className="view-details" style={{ padding: '10px 0' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '15px', marginBottom: '15px' }}>
                 <span style={{ fontWeight: 600, color: '#6B7280' }}>Name:</span>
-                <span style={{ fontWeight: 600 }}>{viewingItem.name}</span>
-
+                <span style={{ fontWeight: 600 }}>{viewingItem.title}</span>
                 <span style={{ fontWeight: 600, color: '#6B7280' }}>SKU:</span>
-                <span>{viewingItem.sku}</span>
-
+                <span>{viewingItem._id.slice(-8).toUpperCase()}</span>
                 <span style={{ fontWeight: 600, color: '#6B7280' }}>Category:</span>
                 <span>{viewingItem.category}</span>
-
                 <span style={{ fontWeight: 600, color: '#6B7280' }}>Quantity:</span>
-                <span className="fw-600">{viewingItem.quantity}</span>
-
+                <span className="fw-600">{viewingItem.stock}</span>
                 <span style={{ fontWeight: 600, color: '#6B7280' }}>Price:</span>
                 <span className="fw-600">₹{viewingItem.price.toFixed(2)}</span>
-
                 <span style={{ fontWeight: 600, color: '#6B7280' }}>Status:</span>
-                <span>{getStatusBadge(viewingItem.quantity)}</span>
-
-                <span style={{ fontWeight: 600, color: '#6B7280' }}>Last Updated:</span>
-                <span>{viewingItem.lastUpdated}</span>
+                <span>{getStatusBadge(viewingItem.stock)}</span>
               </div>
-            </div>
-
-            <div className="modal-actions">
-              <button className="btn-save" onClick={() => setShowViewModal(false)}>Close</button>
             </div>
           </div>
         </div>
@@ -277,50 +272,51 @@ const AdminInventory = () => {
           <IconSearch />
           <input
             type="text"
-            placeholder="Search items by name or SKU..."
+            placeholder="Search by name or SKU..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
         <div className="table-responsive">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Item Details</th>
-                <th>SKU</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredItems.map(item => (
-                <tr key={item.id}>
-                  <td>
-                    <div className="product-cell">
-                      <span className="product-name">{item.name}</span>
-                    </div>
-                  </td>
-                  <td>{item.sku}</td>
-                  <td className="fw-600">{item.quantity}</td>
-                  <td>₹{item.price.toFixed(2)}</td>
-                  <td>{item.category}</td>
-                  <td>{getStatusBadge(item.quantity)}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="btn-action" title="View" onClick={() => handleView(item.id)}><IconView /></button>
-                      <button className="btn-action" title="Edit" onClick={() => handleEdit(item)}><IconEdit /></button>
-                      <button className="btn-action" title="Delete" onClick={() => handleDelete(item.id)}><IconDelete /></button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="empty-state" style={{ margin: '20px' }}>Loading inventory...</div>
+          ) : (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {filteredItems.length === 0 && (
+              </thead>
+              <tbody>
+                {filteredItems.map((item) => (
+                  <tr key={item._id}>
+                    <td>{item.title}</td>
+                    <td>{item._id.slice(-8).toUpperCase()}</td>
+                    <td>{item.category}</td>
+                    <td>{item.stock}</td>
+                    <td>₹{item.price.toFixed(2)}</td>
+                    <td>{getStatusBadge(item.stock)}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button className="btn-action" title="View" onClick={() => handleView(item._id)}><IconView /></button>
+                        <button className="btn-action" title="Edit" onClick={() => handleEdit(item)}><IconEdit /></button>
+                        <button className="btn-action" title="Delete" onClick={() => handleDelete(item._id)}><IconDelete /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {!loading && filteredItems.length === 0 && (
             <div className="empty-state" style={{ margin: '20px' }}>
               No inventory items found matching "{searchTerm}"
             </div>

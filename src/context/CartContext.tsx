@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, type ReactNode } from 'react';
+import { api } from '../services/api';
 
 
 
@@ -37,9 +38,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            fetch(`http://localhost:5000/api/cart/${user.uid}`)
-                .then(res => res.json())
-                .then(data => {
+            api.get(`/cart/${user.uid}`)
+                .then(({ data }) => {
                     if (data && data.items) setCartItems(data.items);
                 })
                 .catch(err => console.error('Error loading cart', err));
@@ -61,11 +61,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            fetch(`http://localhost:5000/api/cart/${user.uid}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: cartItems })
-            }).catch(err => console.error('Error saving cart', err));
+            api.post(`/cart/${user.uid}`, { items: cartItems })
+                .catch(err => console.error('Error saving cart', err));
         }
     }, [cartItems]);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import './AdminDashboard.css';
 
 // SVG Icons
@@ -10,26 +10,16 @@ const IconDollarSign = () => <svg width="20" height="20" viewBox="0 0 24 24" fil
 const AdminAnalytics = () => {
   const [timeRange, setTimeRange] = useState('7d');
   const [isDownloading, setIsDownloading] = useState(false);
-  const [salesData, setSalesData] = useState([
-    { month: 'Jan', sales: 4500 },
-    { month: 'Feb', sales: 5200 },
-    { month: 'Mar', sales: 4800 },
-    { month: 'Apr', sales: 6100 },
-    { month: 'May', sales: 5900 },
-    { month: 'Jun', sales: 7200 },
-  ]);
-
-  useEffect(() => {
-    // Simulate data change based on time range
+  const salesData = useMemo(() => {
     const multiplier = timeRange === '24h' ? 0.1 : timeRange === '30d' ? 1.5 : timeRange === '90d' ? 3.5 : 1;
-    setSalesData([
+    return [
       { month: 'Jan', sales: Math.floor(4500 * multiplier) },
       { month: 'Feb', sales: Math.floor(5200 * multiplier) },
       { month: 'Mar', sales: Math.floor(4800 * multiplier) },
       { month: 'Apr', sales: Math.floor(6100 * multiplier) },
       { month: 'May', sales: Math.floor(5900 * multiplier) },
       { month: 'Jun', sales: Math.floor(7200 * multiplier) },
-    ]);
+    ];
   }, [timeRange]);
 
   const maxSales = Math.max(...salesData.map(d => d.sales), 1);

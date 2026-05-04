@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
+import { INITIAL_ACTIVITY, INITIAL_ORDERS } from './adminData';
 
 // --- SVG Icons for Stats ---
 const IconSales = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h12"></path><path d="M6 8h12"></path><path d="m6 13 8.5 8"></path><path d="M6 13h3"></path><path d="M9 13c6.667 0 6.667-10 0-10"></path></svg>;
@@ -8,44 +9,19 @@ const IconUsers = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="no
 const IconOrdersStats = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>;
 const IconRevenue = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>;
 
-// Mock data for recent activity
-export const INITIAL_ACTIVITY = [
-    { id: 'ACT-001', type: 'order', message: 'New order #ORD-7391 placed by Sufiyan', time: '5 mins ago', status: 'pending' },
-    { id: 'ACT-002', type: 'customer', message: 'New customer registration: Jane Smith', time: '1 hour ago', status: 'completed' },
-    { id: 'ACT-003', type: 'product', message: 'Product "Ergonomic Chair" out of stock', time: '2 hours ago', status: 'warning' },
-    { id: 'ACT-004', type: 'order', message: 'Order #ORD-7388 shipped', time: '5 hours ago', status: 'completed' },
-    { id: 'ACT-005', type: 'review', message: 'New 5-star review on "Wireless Mouse"', time: '1 day ago', status: 'completed' },
-];
-
-const INITIAL_ORDERS = [
-    { id: 'ORD-7391', customer: 'Sufiyan', total: '₹129.99', status: 'Pending', date: 'Oct 24, 2023' },
-    { id: 'ORD-7390', customer: 'Alice Johnson', total: '₹45.00', status: 'Processing', date: 'Oct 24, 2023' },
-    { id: 'ORD-7389', customer: 'Bob Smith', total: '₹899.00', status: 'Shipped', date: 'Oct 23, 2023' },
-    { id: 'ORD-7388', customer: 'Emma Davis', total: '₹34.50', status: 'Delivered', date: 'Oct 23, 2023' },
-];
-
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [timeRange, setTimeRange] = useState('Today');
     const [isGenerating, setIsGenerating] = useState(false);
-    const [stats, setStats] = useState({
-        sales: '₹24,562',
-        orders: '1,245',
-        customers: '8,549',
-        growth: '24.8%'
-    });
-
-    useEffect(() => {
-        // Simulate data update when time range changes
-        const randomStats: Record<string, string> = {
+    const stats = useMemo(() => {
+        const statsByRange: Record<string, { sales: string; orders: string; customers: string; growth: string }> = {
             'Today': { sales: '₹2,456', orders: '42', customers: '12', growth: '3.2%' },
             'Last 7 Days': { sales: '₹18,230', orders: '312', customers: '85', growth: '12.4%' },
             'Last 30 Days': { sales: '₹62,450', orders: '1,120', customers: '345', growth: '21.5%' },
-            'This Year': { sales: '₹424,562', orders: '8,245', customers: '2,549', growth: '34.8%' }
-        }[timeRange] || { sales: '₹24,562', orders: '1,245', customers: '8,549', growth: '24.8%' };
+            'This Year': { sales: '₹424,562', orders: '8,245', customers: '2,549', growth: '34.8%' },
+        };
 
-        // TypeScript safe cast
-        setStats(randomStats as any);
+        return statsByRange[timeRange] || { sales: '₹24,562', orders: '1,245', customers: '8,549', growth: '24.8%' };
     }, [timeRange]);
 
     const handleGenerateReport = () => {

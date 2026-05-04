@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { INITIAL_ACTIVITY } from './AdminDashboard';
+import { INITIAL_ACTIVITY } from './adminData';
 import type { ReactNode } from 'react';
 import './AdminDashboard.css';
 
@@ -24,8 +24,18 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { logout } = useAuth();
+    const { logout, isLoggedIn, isAdmin, isLoading, user } = useAuth();
     const [showNotifications, setShowNotifications] = useState(false);
+
+    useEffect(() => {
+        if (!isLoading && (!isLoggedIn || !isAdmin)) {
+            navigate('/admin/login');
+        }
+    }, [isAdmin, isLoading, isLoggedIn, navigate]);
+
+    if (isLoading || !isLoggedIn || !isAdmin) {
+        return null;
+    }
 
     // Helper to determine if a route is active
     const isActive = (path: string) => location.pathname.startsWith(path);
@@ -36,6 +46,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         logout();
         navigate('/admin/login');
     };
+
+    const adminDisplayName = user?.displayName || user?.email?.split('@')[0] || 'Admin';
+    const adminInitials = adminDisplayName
+        .split(' ')
+        .filter(Boolean)
+        .map((part) => part[0]?.toUpperCase())
+        .slice(0, 2)
+        .join('') || 'A';
 
     return (
         <div className="admin-layout">
@@ -126,11 +144,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                         </div>
                         <div className="user-profile">
                             <div className="user-info">
-                                <span className="user-name">Sufiyan</span>
+                                <span className="user-name">{adminDisplayName}</span>
                                 <span className="user-role">Administrator</span>
                             </div>
-                            <div className="user-avatar">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <div
+                                className="user-avatar"
+                                onClick={() => navigate('/admin/settings')}
+                                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: 700 }}
+                                title="Edit profile"
+                            >
+                                {adminInitials}
                             </div>
                         </div>
                     </div>

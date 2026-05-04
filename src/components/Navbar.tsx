@@ -7,7 +7,7 @@ import './Navbar.css';
 
 const Navbar = () => {
     const { cartCount, toggleCart } = useCart();
-    const { isLoggedIn, logout } = useAuth();
+    const { isLoggedIn, logout, user } = useAuth();
     const { wishlistCount } = useWishlist();
     const navigate = useNavigate();
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -18,6 +18,15 @@ const Navbar = () => {
         logout();
         navigate('/signin');
     };
+
+    const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+    const displayEmail = user?.email || '';
+    const initials = displayName
+        .split(' ')
+        .filter(Boolean)
+        .map((part) => part[0]?.toUpperCase())
+        .slice(0, 2)
+        .join('') || 'U';
 
     return (
         <div className="navbar-container">
@@ -72,21 +81,25 @@ const Navbar = () => {
                     {isLoggedIn && (
                         <div className="nav-profile-container" style={{ position: 'relative' }}>
                             <button className="nav-user-btn" onClick={toggleProfile} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '6px', transition: 'background 0.2s' }}>
-                                <span style={{ fontSize: '13px', fontWeight: 600, color: '#4B5563' }}>Hi, Sufiyan</span>
+                                <span style={{ fontSize: '13px', fontWeight: 600, color: '#4B5563' }}>{`Hi, ${displayName}`}</span>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4B5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showProfileDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
                             </button>
 
                             {showProfileDropdown && (
                                 <div className="profile-dropdown">
                                     <div className="dropdown-user-header">
-                                        <div className="user-avatar-sm">SF</div>
+                                        <div className="user-avatar-sm">{initials}</div>
                                         <div className="user-details-sm">
-                                            <span className="user-name-sm">Sufiyan</span>
-                                            <span className="user-email-sm">sufiyan@example.com</span>
+                                            <span className="user-name-sm">{displayName}</span>
+                                            <span className="user-email-sm">{displayEmail}</span>
                                         </div>
                                     </div>
                                     <div className="dropdown-divider"></div>
                                     <ul className="dropdown-menu-list">
+                                        <li onClick={() => { navigate('/profile'); setShowProfileDropdown(false); }}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                            Profile
+                                        </li>
                                         <li onClick={() => { navigate('/orders'); setShowProfileDropdown(false); }}>
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                                             My Orders
