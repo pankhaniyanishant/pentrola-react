@@ -11,7 +11,7 @@ import About from './components/About'
 import Contact from './components/Contact'
 import SignIn from './components/SignIn'
 import CreateAccount from './components/CreateAccount'
-import ForgotPassword from './components/ForgotPassword'
+
 import AdminLogin from './admin/AdminLogin'
 import AdminLayout from './admin/AdminLayout';
 import AdminProducts from './admin/AdminProducts';
@@ -44,7 +44,7 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<CreateAccount />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+              
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/orders" element={<OrderHistory />} />
               <Route path="/wishlist" element={<Wishlist />} />

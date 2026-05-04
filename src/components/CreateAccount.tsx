@@ -47,7 +47,7 @@ const CreateAccount = () => {
             navigate('/');
         } catch (err: unknown) {
             const msg = (err as { message?: string })?.message || '';
-            if (msg.includes('email-already-in-use')) {
+            if (msg.includes('email-already-in-use') || msg.toLowerCase().includes('user already exists') || msg.toLowerCase().includes('email already in use')) {
                 setError('This email is already registered. Please sign in instead.');
             } else if (msg.includes('weak-password')) {
                 setError('Password is too weak. Please use at least 8 characters.');

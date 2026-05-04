@@ -115,10 +115,7 @@ const SignIn = () => {
                         </div>
 
                         <div className="input-group">
-                            <div className="password-header">
-                                <label htmlFor="password">Password</label>
-                                <Link to="/forgot-password" style={{ fontSize: '12px', color: '#E65A2E', fontWeight: 600, textDecoration: 'none' }}>Forgot Password?</Link>
-                            </div>
+                            <label htmlFor="password">Password</label>
                             <div className="input-wrapper">
                                 <svg className="input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
