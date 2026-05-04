@@ -34,11 +34,11 @@ const AdminOrders = () => {
     }, []);
 
     const displayedOrders = orders.filter((o) => {
-        const matchesFilter = activeFilter === 'All' || o.status === activeFilter;
         const search = searchTerm.toLowerCase();
         const orderId = o._id.toLowerCase();
-        const customerName = (o.user?.name || 'Guest').toLowerCase();
-        const userEmail = (o.user?.email || o.guestEmail || 'guest@order').toLowerCase();
+        const customerName = (o.customerName || 'Guest').toLowerCase();
+        const userEmail = (o.customerEmail || o.guestEmail || 'guest@order').toLowerCase();
+        const matchesFilter = activeFilter === 'All' || o.status === activeFilter;
         return matchesFilter && (orderId.includes(search) || customerName.includes(search) || userEmail.includes(search));
     });
 
@@ -115,11 +115,11 @@ const AdminOrders = () => {
                             <div className="order-info-grid">
                                 <div className="info-block">
                                     <span className="info-label">Customer</span>
-                                    <span className="info-value">{order.user?.name || 'Guest User'}</span>
+                                    <span className="info-value">{order.customerName || 'Guest User'}</span>
                                 </div>
                                 <div className="info-block">
                                     <span className="info-label">Email</span>
-                                    <span className="info-value">{order.user?.email || order.guestEmail || 'N/A'}</span>
+                                    <span className="info-value">{order.customerEmail || order.guestEmail || 'N/A'}</span>
                                 </div>
                                 <div className="info-block">
                                     <span className="info-label">Items</span>
@@ -160,8 +160,8 @@ const AdminOrders = () => {
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
                                 <div>
                                     <h4 style={{ margin: '0 0 8px 0', fontSize: '0.875rem', color: '#6B7280' }}>Customer Information</h4>
-                                    <p style={{ margin: 0, fontWeight: 600 }}>{viewingOrder.user?.name || 'Guest User'}</p>
-                                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#4B5563' }}>{viewingOrder.user?.email || viewingOrder.guestEmail || 'N/A'}</p>
+                                    <p style={{ margin: 0, fontWeight: 600 }}>{viewingOrder.customerName || 'Guest User'}</p>
+                                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#4B5563' }}>{viewingOrder.customerEmail || viewingOrder.guestEmail || 'N/A'}</p>
                                 </div>
                                 <div>
                                     <h4 style={{ margin: '0 0 8px 0', fontSize: '0.875rem', color: '#6B7280' }}>Shipping Address</h4>

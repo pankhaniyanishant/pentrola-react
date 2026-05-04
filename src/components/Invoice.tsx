@@ -1,14 +1,97 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ORDERS } from './OrderHistory';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import './Invoice.css';
 
+interface OrderItem {
+    title: string;
+    qty: number;
+    price: number;
+    image: string;
+    category?: string;
+}
+
+interface Order {
+    _id: string;
+    orderItems: OrderItem[];
+    itemsPrice: number;
+    shippingPrice: number;
+    totalPrice: number;
+    status: string;
+    createdAt: string;
+    shippingAddress?: {
+        address: string;
+        city: string;
+        postalCode: string;
+        country: string;
+    };
+    paymentMethod?: string;
+    user?: string;
+    guestEmail?: string;
+}
+
 const Invoice = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const [order, setOrder] = useState<Order | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const order = ORDERS.find(o => o.id === id);
+    useEffect(() => {
+        const fetchOrder = async () => {
+            if (!user?.uid) {
+                setLoading(false);
+                return;
+            }
+            try {
+                const { data } = await api.get(`/orders/user/${user.uid}`);
+                const foundOrder = (data || []).find((o: Order) => o._id === id);
+                setOrder(foundOrder || null);
+            } catch (err) {
+                console.error('Error fetching order:', err);
+                setOrder(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrder();
+    }, [id, user?.uid]);
+
+    const formatDate = (dateStr: string) => {
+        return new Date(dateStr).toLocaleDateString('en-IN', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    };
+
+    const formatPrice = (price: number) => price.toLocaleString('en-IN');
+
+    const getStatusClass = (status: string) => {
+        switch (status?.toLowerCase()) {
+            case 'delivered': return 'delivered';
+            case 'shipped': return 'shipped';
+            case 'pending': return 'processing';
+            default: return 'processing';
+        }
+    };
+
+    const printInvoice = () => {
+        window.print();
+    };
+
+    if (loading) {
+        return (
+            <div style={{ minHeight: '100vh', backgroundColor: '#FFFFFF' }}>
+                <Navbar />
+                <div style={{ textAlign: 'center', padding: '4rem' }}>Loading invoice...</div>
+                <Footer />
+            </div>
+        );
+    }
 
     if (!order) {
         return (
@@ -24,10 +107,6 @@ const Invoice = () => {
         );
     }
 
-    const printInvoice = () => {
-        window.print();
-    };
-
     return (
         <div className="invoice-page-wrapper">
             <Navbar />
@@ -39,7 +118,6 @@ const Invoice = () => {
                 </div>
 
                 <div className="invoice-card" id="printable-invoice">
-                    {/* Invoice Header */}
                     <header className="invoice-header">
                         <div className="brand-section">
                             <h1 className="brand-name">PANTROLA</h1>
@@ -50,31 +128,31 @@ const Invoice = () => {
                         </div>
                     </header>
 
-                    {/* Order Meta Data */}
                     <section className="invoice-meta">
                         <div className="meta-left">
                             <h3>Billed To:</h3>
-                            <p><strong>Valuable Customer</strong></p>
-                            <p>Email: user@example.com</p>
-                            <p>Address: 123, Toy Street, Play City</p>
+                            <p><strong>{user?.displayName || 'Valuable Customer'}</strong></p>
+                            <p>Email: {user?.email || order.guestEmail || 'N/A'}</p>
+                            {order.shippingAddress && (
+                                <p>Address: {order.shippingAddress.address}, {order.shippingAddress.city}</p>
+                            )}
                         </div>
                         <div className="meta-right">
                             <div className="meta-item">
                                 <span>Order ID:</span>
-                                <strong>{order.id}</strong>
+                                <strong>{order._id}</strong>
                             </div>
                             <div className="meta-item">
                                 <span>Date:</span>
-                                <strong>{order.date}</strong>
+                                <strong>{formatDate(order.createdAt)}</strong>
                             </div>
                             <div className="meta-item">
                                 <span>Status:</span>
-                                <span className={`status-badge status-${order.status.toLowerCase()}`}>{order.status}</span>
+                                <span className={`status-badge status-${getStatusClass(order.status)}`}>{order.status}</span>
                             </div>
                         </div>
                     </section>
 
-                    {/* Items Table */}
                     <section className="invoice-items">
                         <table className="invoice-table">
                             <thead>
@@ -86,38 +164,36 @@ const Invoice = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {order.items.map((item, idx) => (
+                                {order.orderItems.map((item, idx) => (
                                     <tr key={idx}>
-                                        <td>{item.name}</td>
-                                        <td className="text-center">{item.quantity}</td>
-                                        <td className="text-center">₹{item.price}</td>
-                                        <td className="text-right">₹{item.quantity * item.price}</td>
+                                        <td>{item.title}</td>
+                                        <td className="text-center">{item.qty}</td>
+                                        <td className="text-center">₹{formatPrice(item.price)}</td>
+                                        <td className="text-right">₹{formatPrice(item.qty * item.price)}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </section>
 
-                    {/* Summary Section */}
                     <section className="invoice-summary">
                         <div className="summary-spacer"></div>
                         <div className="summary-details">
                             <div className="summary-row">
                                 <span>Subtotal:</span>
-                                <span>₹{order.total}</span>
+                                <span>₹{formatPrice(order.itemsPrice)}</span>
                             </div>
                             <div className="summary-row">
                                 <span>Shipping:</span>
-                                <span className="free-text">FREE</span>
+                                <span>{order.shippingPrice === 0 ? 'FREE' : `₹${formatPrice(order.shippingPrice)}`}</span>
                             </div>
                             <div className="summary-row total">
                                 <span>Grand Total:</span>
-                                <strong>₹{order.total}</strong>
+                                <strong>₹{formatPrice(order.totalPrice)}</strong>
                             </div>
                         </div>
                     </section>
 
-                    {/* Footer */}
                     <footer className="invoice-footer-content">
                         <p>Thank you for shopping with Pantrola!</p>
                         <p>For any queries, please contact at <strong>support@pantrola.com</strong></p>

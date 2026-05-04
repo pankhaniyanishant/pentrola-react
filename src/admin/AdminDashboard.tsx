@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { jsPDF } from 'jspdf';
 import './AdminDashboard.css';
-import { getDashboardStats, type DashboardStats } from '../services/adminApi';
+import { getDashboardStats, generateReport, type DashboardStats } from '../services/adminApi';
 import { getApiErrorMessage } from '../services/api';
 
 // --- SVG Icons for Stats ---
@@ -32,17 +33,110 @@ const AdminDashboard = () => {
         fetchStats();
     }, [timeRange]);
 
-    const handleGenerateReport = () => {
+    const handleGenerateReport = async () => {
         setIsGenerating(true);
-        setTimeout(() => {
+        try {
+            const reportData = await generateReport(timeRange);
+            
+            const doc = new jsPDF();
+            const primaryColor = [255, 77, 77];
+            const secondaryColor = [33, 37, 41];
+
+            doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+            doc.rect(0, 0, 210, 45, 'F');
+
+            doc.setFontSize(28);
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PANTROLA', 105, 25, { align: 'center' });
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(200, 200, 200);
+            doc.text('Admin Sales Report', 105, 32, { align: 'center' });
+
+            doc.setFontSize(18);
+            doc.setTextColor(255, 255, 255);
+            doc.text('SALES REPORT', 190, 28, { align: 'right' });
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Report Summary', 20, 60);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Period: ${reportData.range}`, 20, 68);
+            doc.text(`Generated: ${new Date(reportData.generatedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 20, 76);
+
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Key Metrics', 20, 95);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(11);
+            doc.text(`Total Sales: ₹${reportData.totalSales.toLocaleString('en-IN')}`, 20, 103);
+            doc.text(`Total Orders: ${reportData.totalOrders}`, 20, 111);
+            doc.text(`Total Customers: ${reportData.totalCustomers}`, 20, 119);
+
+            doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.rect(20, 135, 170, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text('Order ID', 25, 141);
+            doc.text('Customer', 55, 141);
+            doc.text('Items', 115, 141, { align: 'center' });
+            doc.text('Total', 145, 141, { align: 'center' });
+            doc.text('Status', 175, 141, { align: 'right' });
+
+            doc.setTextColor(50, 50, 50);
+            doc.setFont('helvetica', 'normal');
+            let currentY = 152;
+            
+            reportData.orders.forEach((order, index) => {
+                if (currentY > 270) {
+                    doc.addPage();
+                    currentY = 20;
+                }
+                
+                if (index % 2 === 0) {
+                    doc.setFillColor(252, 252, 252);
+                    doc.rect(20, currentY - 5, 170, 10, 'F');
+                }
+
+                doc.text(order.orderId, 25, currentY);
+                doc.text(order.customerName.length > 20 ? order.customerName.substring(0, 20) + '...' : order.customerName, 55, currentY);
+                doc.text(order.items.toString(), 115, currentY, { align: 'center' });
+                doc.text(`₹${order.total.toLocaleString('en-IN')}`, 145, currentY, { align: 'center' });
+                doc.text(order.status, 175, currentY, { align: 'right' });
+                
+                currentY += 10;
+            });
+
+            doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+            doc.rect(0, 275, 210, 22, 'F');
+
+            doc.setFontSize(9);
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.text('THANK YOU FOR USING PANTROLA ADMIN', 105, 283, { align: 'center' });
+
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(180, 180, 180);
+            doc.text('For support, contact us at support@pantrola.com', 105, 288, { align: 'center' });
+            doc.text('www.pantrola.com', 105, 293, { align: 'center' });
+
+            doc.save(`Pantrola_Report_${timeRange.replace(' ', '_')}.pdf`);
+        } catch (err) {
+            console.error('Report generation error:', err);
+            alert('Failed to generate report. Please try again.');
+        } finally {
             setIsGenerating(false);
-            alert('Report successfully generated and downloaded!');
-        }, 2000);
+        }
     };
 
 const formatCurrency = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
     const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
-    const getCustomerName = (order: DashboardStats['recentOrders'][0]) => order.user?.name || order.guestEmail || 'Guest';
+    const getCustomerName = (order: DashboardStats['recentOrders'][0]) => order.customerName || order.guestEmail || 'Guest';
 
     return (
         <div className="admin-page">

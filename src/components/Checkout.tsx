@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+
 const placeOrder = async (orderData: any) => {
     const payload = {
-        user: orderData.userId !== 'guest' ? orderData.userId : undefined,
-        guestEmail: orderData.userId === 'guest' ? orderData.userEmail : undefined,
+        user: orderData.userId && orderData.userId !== 'guest' ? orderData.userId : null,
+        userEmail: orderData.userId && orderData.userId !== 'guest' ? orderData.userEmail : null,
+        guestEmail: orderData.userId === 'guest' ? orderData.userEmail : null,
         orderItems: orderData.items.map((item: any) => ({
             title: item.title,
             qty: item.quantity,
             image: item.image,
             price: item.price,
-            product: item.id
+            id: item.id
         })),
         shippingAddress: {
             address: orderData.address.address,
@@ -30,13 +32,14 @@ const placeOrder = async (orderData: any) => {
     const { data } = await api.post('/orders', payload);
     return data;
 };
+
 import Navbar from './Navbar';
 import Footer from './Footer';
 import './Checkout.css';
 
 const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart();
-    const { user } = useAuth();
+    const { user, isLoggedIn } = useAuth();
     const navigate = useNavigate();
     const shippingFee = cartTotal > 999 ? 0 : 99;
     const grandTotal = cartTotal + shippingFee;
@@ -50,6 +53,16 @@ const Checkout = () => {
         state: '',
         zipCode: ''
     });
+
+    useEffect(() => {
+        if (isLoggedIn && user) {
+            setFormData(prev => ({
+                ...prev,
+                fullName: user.displayName || '',
+                email: user.email || ''
+            }));
+        }
+    }, [isLoggedIn, user]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -119,7 +132,10 @@ const Checkout = () => {
                                     type="text"
                                     id="fullName"
                                     name="fullName"
-                                    placeholder=""
+                                    value={formData.fullName}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Enter your full name"
                                 />
                             </div>
 
@@ -130,7 +146,10 @@ const Checkout = () => {
                                         type="tel"
                                         id="phone"
                                         name="phone"
-                                        placeholder=""
+                                        value={formData.phone}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="Enter phone number"
                                     />
                                 </div>
                                 <div className="form-group">
@@ -139,7 +158,13 @@ const Checkout = () => {
                                         type="email"
                                         id="email"
                                         name="email"
-                                        placeholder=""
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        required
+                                        readOnly={isLoggedIn}
+                                        disabled={isLoggedIn}
+                                        placeholder={isLoggedIn ? undefined : "Enter email address"}
+                                        style={isLoggedIn ? { backgroundColor: '#f3f4f6', cursor: 'not-allowed' } : undefined}
                                     />
                                 </div>
                             </div>
@@ -153,7 +178,7 @@ const Checkout = () => {
                                     onChange={handleInputChange}
                                     required
                                     rows={3}
-                                    placeholder=""
+                                    placeholder="Enter street address"
                                 ></textarea>
                             </div>
 
@@ -167,7 +192,7 @@ const Checkout = () => {
                                         value={formData.city}
                                         onChange={handleInputChange}
                                         required
-                                        placeholder=""
+                                        placeholder="City"
                                     />
                                 </div>
                                 <div className="form-group">
@@ -179,7 +204,7 @@ const Checkout = () => {
                                         value={formData.state}
                                         onChange={handleInputChange}
                                         required
-                                        placeholder=""
+                                        placeholder="State"
                                     />
                                 </div>
                                 <div className="form-group">
@@ -191,7 +216,7 @@ const Checkout = () => {
                                         value={formData.zipCode}
                                         onChange={handleInputChange}
                                         required
-                                        placeholder=""
+                                        placeholder="ZIP Code"
                                     />
                                 </div>
                             </div>

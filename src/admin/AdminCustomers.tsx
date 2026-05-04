@@ -48,7 +48,7 @@ const AdminCustomers = () => {
             setCustomers(users);
 
             const summary = orders.reduce<Record<string, { count: number; total: number }>>((acc, order) => {
-                const userId = order.user?._id;
+                const userId = order.user;
                 if (!userId) return acc;
                 const current = acc[userId] || { count: 0, total: 0 };
                 acc[userId] = { count: current.count + 1, total: current.total + order.totalPrice };
@@ -68,10 +68,12 @@ const AdminCustomers = () => {
     }, []);
 
     const filteredCustomers = useMemo(
-        () => customers.filter((customer) =>
-            customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.email.toLowerCase().includes(searchTerm.toLowerCase())
-        ),
+        () => customers
+            .filter((customer) => !customer.isAdmin)
+            .filter((customer) =>
+                customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+            ),
         [customers, searchTerm]
     );
 
@@ -133,19 +135,20 @@ const AdminCustomers = () => {
     };
 
     const handleExportCSV = () => {
-        const headers = ['ID', 'Name', 'Email', 'Orders', 'Spent', 'Joined Date', 'Role'];
-        const csvRows = customers.map((customer) => {
-            const stats = orderSummary[customer._id] || { count: 0, total: 0 };
-            return [
-                customer._id,
-                `"${customer.name}"`,
-                `"${customer.email}"`,
-                stats.count,
-                stats.total.toFixed(2),
-                customer.createdAt ? new Date(customer.createdAt).toISOString().split('T')[0] : '',
-                customer.isAdmin ? 'Admin' : 'Customer',
-            ];
-        });
+        const headers = ['ID', 'Name', 'Email', 'Orders', 'Spent', 'Joined Date'];
+        const csvRows = customers
+            .filter((customer) => !customer.isAdmin)
+            .map((customer) => {
+                const stats = orderSummary[customer._id] || { count: 0, total: 0 };
+                return [
+                    customer._id,
+                    `"${customer.name}"`,
+                    `"${customer.email}"`,
+                    stats.count,
+                    stats.total.toFixed(2),
+                    customer.createdAt ? new Date(customer.createdAt).toISOString().split('T')[0] : '',
+                ];
+            });
         const csvContent = [headers.join(','), ...csvRows.map((row) => row.join(','))].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);

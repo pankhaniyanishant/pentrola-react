@@ -1,15 +1,19 @@
 const mongoose = require('mongoose');
 
+const orderItemSchema = new mongoose.Schema({
+    id: { type: String, required: true },
+    title: { type: String, required: true },
+    qty: { type: Number, required: true },
+    image: { type: String },
+    price: { type: Number, required: true },
+    category: { type: String }
+}, { _id: false });
+
 const orderSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    user: { type: String },
+    userEmail: { type: String },
     guestEmail: { type: String },
-    orderItems: [{
-        title: { type: String, required: true },
-        qty: { type: Number, required: true },
-        image: { type: String },
-        price: { type: Number, required: true },
-        product: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product' }
-    }],
+    orderItems: [orderItemSchema],
     shippingAddress: {
         address: { type: String, required: true },
         city: { type: String, required: true },

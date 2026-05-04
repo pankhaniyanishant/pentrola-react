@@ -19,7 +19,11 @@ export interface AdminOrderItem {
 export interface AdminOrder {
     _id: string;
     status: string;
+    user?: string;
+    userEmail?: string;
     guestEmail?: string;
+    customerName?: string;
+    customerEmail?: string;
     totalPrice: number;
     createdAt: string;
     shippingAddress?: {
@@ -29,11 +33,6 @@ export interface AdminOrder {
         postalCode?: string;
     };
     orderItems: AdminOrderItem[];
-    user?: {
-        _id?: string;
-        name?: string;
-        email?: string;
-    };
 }
 
 export interface AdminUser {
@@ -114,8 +113,10 @@ export interface DashboardStats {
         status: string;
         totalPrice: number;
         createdAt: string;
-        user?: { name?: string };
+        user?: string;
         guestEmail?: string;
+        customerName?: string;
+        customerEmail?: string;
     }[];
     recentActivity: {
         id: string;
@@ -131,15 +132,37 @@ export const getDashboardStats = async (timeRange: string = 'Today') => {
     return data;
 };
 
+export interface ReportData {
+    range: string;
+    generatedAt: string;
+    totalSales: number;
+    totalOrders: number;
+    totalCustomers: number;
+    orders: {
+        orderId: string;
+        customerName: string;
+        customerEmail: string;
+        items: number;
+        total: number;
+        status: string;
+        date: string;
+    }[];
+}
+
+export const generateReport = async (timeRange: string = 'Today') => {
+    const { data } = await api.get<ReportData>(`/admin/dashboard/report?range=${timeRange}`);
+    return data;
+};
+
 export interface AnalyticsData {
     grossSales: number;
     totalOrders: number;
-    storeVisits: number;
-    conversionRate: number;
+    totalCustomers: number;
+    averageOrderValue: number;
     salesGrowth: number;
     ordersGrowth: number;
-    visitsGrowth: number;
-    conversionGrowth: number;
+    customersGrowth: number;
+    aovGrowth: number;
     salesChart: { month: string; sales: number }[];
     topProducts: { name: string; sales: number; growth: number }[];
 }
