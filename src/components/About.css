@@ -1,0 +1,747 @@
+.about-page {
+    background-color: #FAFAFA;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.about-page .about-main {
+    flex-grow: 1;
+}
+
+/* Hero Section */
+.about-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 80px 10%;
+    gap: 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 500px;
+}
+
+.hero-content .section-subtitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.hero-title {
+    font-size: 56px;
+    line-height: 1.1;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 24px 0;
+    font-family: serif;
+}
+
+.hero-description {
+    color: #6B7280;
+    font-size: 16px;
+    line-height: 1.7;
+    margin: 0 0 40px 0;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 16px;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #d14a22;
+    /* Slightly darker shade */
+}
+
+.btn-secondary {
+    background-color: white;
+    color: #111827;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    border: 1px solid #E5E7EB;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+/* Image Container and Overlay Badges */
+.hero-image-container {
+    flex: 1;
+    position: relative;
+    border-radius: 20px;
+    background-color: #E8F2ED;
+    /* Subtle pastel background from the design */
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+}
+
+.hero-main-image {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+/* Overlay Badges */
+.badge-overlay {
+    position: absolute;
+    background-color: white;
+    border-radius: 30px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.badge-overlay .icon-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #F3F4F6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4B5563;
+    flex-shrink: 0;
+}
+
+.badge-overlay .badge-text {
+    font-size: 13px;
+    color: #4B5563;
+    line-height: 1.3;
+}
+
+.badge-overlay .badge-text strong {
+    color: #111827;
+}
+
+/* Positioning of specific badges based on design */
+.badge-overlay.top-left {
+    top: -15px;
+    left: 20px;
+}
+
+.badge-overlay.top-right {
+    top: 20px;
+    right: -20px;
+}
+
+.badge-overlay.middle-left {
+    top: 40%;
+    left: -30px;
+}
+
+.badge-overlay.middle-right {
+    top: 30%;
+    right: 10px;
+}
+
+.badge-overlay.bottom-left.primary {
+    bottom: -10px;
+    left: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    padding: 16px 24px;
+}
+
+.badge-overlay.bottom-left.primary .badge-text {
+    color: white;
+}
+
+.badge-overlay.bottom-right {
+    bottom: 20px;
+    right: 30px;
+}
+
+/* Statistics Section */
+.about-stats {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    padding: 60px 10%;
+    background-color: white;
+    border-top: 1px solid #F3F4F6;
+    border-bottom: 1px solid #F3F4F6;
+    margin-bottom: 80px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 40px;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+    font-family: inherit;
+}
+
+.stat-label {
+    font-size: 15px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .about-hero {
+        flex-direction: column;
+        padding: 60px 5%;
+    }
+
+    .hero-content {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    .hero-actions {
+        justify-content: center;
+    }
+
+    .about-stats {
+        gap: 40px;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 42px;
+    }
+
+    .badge-overlay {
+        display: none;
+        /* Hide floating badges on smaller screens to prevent clutter */
+    }
+
+    .badge-overlay.bottom-left.primary {
+        display: flex;
+        /* Keep the most important banner */
+        bottom: 20px;
+        left: 20px;
+    }
+
+    .stat-item {
+        width: 40%;
+    }
+
+    .about-mission {
+        flex-direction: column-reverse;
+        padding: 60px 5%;
+        gap: 40px;
+    }
+
+    .mission-content {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    .mission-features {
+        grid-template-columns: 1fr;
+        text-align: left;
+    }
+}
+
+/* Mission Section */
+.about-mission {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 80px 10%;
+    gap: 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: white;
+}
+
+.mission-image-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mission-image {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.mission-content {
+    flex: 1.2;
+    max-width: 600px;
+}
+
+.mission-content .section-subtitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.mission-title {
+    font-size: 46px;
+    line-height: 1.15;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 24px 0;
+    font-family: serif;
+}
+
+.mission-description {
+    color: #6B7280;
+    font-size: 16px;
+    line-height: 1.8;
+    margin: 0 0 48px 0;
+}
+
+.mission-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 24px;
+}
+
+.feature-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background-color: #FFF0EB;
+    /* light orange/primary color background */
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.feature-text strong {
+    display: block;
+    font-size: 16px;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.feature-text p {
+    font-size: 14px;
+    color: #6B7280;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Journey Section */
+.about-journey {
+    display: flex;
+    justify-content: space-between;
+    padding: 80px 10%;
+    gap: 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: #FAFAFA;
+    /* Very light gray/off-white background */
+    border-top: 1px solid #F3F4F6;
+}
+
+.journey-content-container {
+    flex: 1;
+    max-width: 550px;
+    padding-top: 20px;
+}
+
+.journey-content-container .section-subtitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.journey-title {
+    font-size: 46px;
+    line-height: 1.15;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 24px 0;
+    font-family: serif;
+}
+
+.journey-description {
+    color: #6B7280;
+    font-size: 16px;
+    line-height: 1.8;
+    margin: 0 0 48px 0;
+}
+
+/* Timeline Styles */
+.timeline {
+    position: relative;
+    padding-left: 24px;
+    margin-left: 12px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    /* Start slightly below the top */
+    bottom: 0;
+    /* Ensures it stretches to the bottom */
+    width: 2px;
+    /* Line thickness */
+    background-color: #E5E7EB;
+    /* Light gray line color */
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 40px;
+    /* Space between items */
+}
+
+/* The last item doesn't need bottom padding since the line stops */
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+/* Timeline Markers (Circles) */
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    /* Position the marker exactly on the line: (24px left padding + 1px half line width + 4px half marker radius) */
+    top: 3px;
+    /* Align vertically with the start of the year text */
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #FAFAFA;
+    /* Match background so it looks hollow */
+    border: 2px solid var(--primary-color);
+    /* Orange outline */
+    z-index: 1;
+}
+
+/* Active/Last Timeline Marker is solid */
+.timeline-item.active::before {
+    background-color: var(--primary-color);
+    /* Solid orange fill */
+}
+
+/* Timeline Content */
+.timeline-year {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+.timeline-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+.timeline-text {
+    font-size: 14px;
+    color: #6B7280;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Image Container */
+.journey-image-container {
+    flex: 1.2;
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    /* Align image to the right */
+}
+
+.journey-image {
+    width: 100%;
+    max-width: 650px;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.sparkle-icon {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    opacity: 0.8;
+}
+
+/* Updating Responsive Design for Journey Section */
+@media (max-width: 1024px) {
+    .about-journey {
+        flex-direction: column;
+        padding: 60px 5%;
+        gap: 60px;
+    }
+
+    .journey-content-container {
+        max-width: 100%;
+    }
+
+    .journey-image-container {
+        justify-content: center;
+        /* Center image on smaller screens */
+    }
+
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .team-grid {
+        grid-template-columns: 1fr !important;
+        padding: 0 20px;
+    }
+
+    .team-title {
+        font-size: 32px !important;
+    }
+}
+
+/* Team Section */
+.about-team {
+    padding: 100px 5% 120px;
+    background-color: white;
+    text-align: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.team-header {
+    max-width: 650px;
+    margin: 0 auto 60px;
+}
+
+.team-title {
+    font-size: 44px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 20px;
+    font-family: serif;
+}
+
+.team-description {
+    font-size: 16px;
+    color: #6B7280;
+    line-height: 1.6;
+}
+
+.team-featured {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    /* This creates space for the overlapping cards below */
+    margin-bottom: -100px;
+    z-index: 1;
+}
+
+.team-featured-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+}
+
+.team-grid-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+    /* Ensure cards sit above the bottom of the featured image */
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.team-member-card {
+    background: white;
+    border-radius: 12px;
+    padding: 40px 20px 30px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid #F3F4F6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.member-avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #FFF0EB;
+    /* Light orange matching design */
+    margin-bottom: 24px;
+    display: inline-block;
+}
+
+.member-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+.member-role {
+    font-size: 14px;
+    color: var(--primary-color);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Call to Action Section */
+.about-cta {
+    background-color: var(--primary-color);
+    padding: 100px 5%;
+    text-align: center;
+}
+
+.cta-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.cta-content h2 {
+    font-size: 42px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 20px 0;
+    font-family: serif;
+}
+
+.cta-content p {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin: 0 0 40px 0;
+    font-weight: 300;
+}
+
+.cta-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.cta-btn-primary {
+    background-color: white;
+    color: #111827;
+    /* Dark gray/black text */
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.cta-btn-primary:hover {
+    background-color: #F9FAFB;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cta-btn-secondary {
+    background-color: transparent;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cta-btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+/* Responsive adjustments for CTA */
+@media (max-width: 768px) {
+    .cta-content h2 {
+        font-size: 32px;
+    }
+
+    .cta-content p {
+        font-size: 16px;
+    }
+
+    .cta-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .cta-btn-primary,
+    .cta-btn-secondary {
+        justify-content: center;
+    }
+}

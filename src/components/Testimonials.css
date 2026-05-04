@@ -1,0 +1,116 @@
+.testimonials-section {
+    padding: 80px 48px;
+    background-color: #FFFFFF;
+}
+
+.testimonials-section .section-header.center {
+    text-align: center;
+    margin-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.testimonial-card {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.testimonial-card:hover {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    border-color: #D1D5DB;
+}
+
+.quote-icon {
+    width: 32px;
+    height: 32px;
+    color: #FFC5C5;
+    /* Light pink/orange quote based on image */
+    margin-bottom: 20px;
+}
+
+.quote-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #111827;
+    font-weight: 500;
+    margin: 0 0 24px 0;
+    flex: 1;
+    /* Pushes the rest to the bottom */
+}
+
+.review-meta {
+    margin-bottom: 24px;
+    border-bottom: 1px solid #F3F4F6;
+    padding-bottom: 16px;
+}
+
+.review-meta .stars {
+    margin-bottom: 8px;
+}
+
+.review-meta .star {
+    width: 16px;
+    height: 16px;
+}
+
+.review-meta .star.filled {
+    color: #FBBF24;
+}
+
+.review-meta .star.empty {
+    color: #E5E7EB;
+}
+
+.purchased-item {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.author-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.author-location {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+@media (max-width: 1024px) {
+    .testimonials-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .testimonials-section {
+        padding: 56px 24px;
+    }
+}

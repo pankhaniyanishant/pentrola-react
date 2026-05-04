@@ -1,0 +1,198 @@
+.products-page {
+    background-color: #F8FAFC;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.products-page .products-main {
+    flex-grow: 1;
+    padding-bottom: 64px;
+}
+
+/* Header Section */
+.products-header {
+    background-color: white;
+    padding: 32px 48px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.products-header .section-subtitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.products-header h1.section-title {
+    font-size: 42px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 8px 0;
+    font-family: serif;
+    /* From screenshot it appears to be a serif font like Playfair Display or similar */
+}
+
+.products-header .section-desc {
+    color: #6B7280;
+    font-size: 15px;
+    max-width: 600px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Filters Section */
+.products-filters {
+    padding: 24px 48px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.filters-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-bar {
+    position: relative;
+    width: 320px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 14px 10px 36px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(230, 90, 46, 0.1);
+}
+
+.filters-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.product-count {
+    color: #6B7280;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sort-dropdown {
+    padding: 8px 16px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Categories Section */
+.categories-list {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    /* For scrollbar if any */
+}
+
+.categories-list::-webkit-scrollbar {
+    height: 4px;
+}
+
+.categories-list::-webkit-scrollbar-track {
+    background: #F3F4F6;
+}
+
+.categories-list::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 4px;
+}
+
+.category-pill {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4B5563;
+    background-color: white;
+    border: 1px solid #E5E7EB;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.category-pill:hover {
+    background-color: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+.category-pill.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* The Grid Container */
+.products-page .products-grid-container {
+    padding: 32px 48px;
+}
+
+/* Reusing Bestsellers.css styles for the inner grid and cards */
+
+@media (max-width: 768px) {
+    .products-header {
+        padding: 24px;
+    }
+
+    .products-filters {
+        padding: 20px 24px 0;
+    }
+
+    .products-page .products-grid-container {
+        padding: 24px;
+    }
+
+    .filters-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .filters-actions {
+        justify-content: space-between;
+    }
+}

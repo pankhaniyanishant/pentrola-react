@@ -1,0 +1,125 @@
+.promo-banner-section {
+    position: relative;
+    width: 100%;
+    padding: 120px 80px;
+    background-image: url('/promo-bg.png');
+    /* Assuming promo-bg is in public folder */
+    background-size: cover;
+    background-position: center;
+    background-color: #1A1F2C;
+    /* Fallback dark navy */
+}
+
+/* Optional gradient overlay to ensure text readability against the image */
+.promo-banner-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, rgba(26, 31, 44, 0.95) 0%, rgba(26, 31, 44, 0.7) 100%);
+    z-index: 1;
+}
+
+.promo-banner-content {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.promo-subtitle {
+    color: var(--primary-color);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.promo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.promo-desc {
+    color: #E5E7EB;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-top: 8px;
+    margin-bottom: 24px;
+}
+
+.promo-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.promo-btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.promo-btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.promo-btn-primary:active {
+    transform: scale(0.98);
+}
+
+.promo-btn-secondary {
+    background-color: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.promo-btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+    .promo-banner-section {
+        padding: 80px 32px;
+    }
+
+    .promo-title {
+        font-size: 36px;
+    }
+
+    .promo-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .promo-btn-primary,
+    .promo-btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}

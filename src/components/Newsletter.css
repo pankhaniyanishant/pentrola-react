@@ -1,0 +1,105 @@
+.newsletter-section {
+    padding: 80px 48px;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.newsletter-container {
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.newsletter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+}
+
+.newsletter-desc {
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 32px 0;
+    opacity: 0.95;
+}
+
+.newsletter-form {
+    display: flex;
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+}
+
+.newsletter-input {
+    flex: 1;
+    padding: 16px 24px;
+    border: none;
+    font-size: 15px;
+    outline: none;
+    font-family: inherit;
+    color: #111827;
+}
+
+.newsletter-input::placeholder {
+    color: #9CA3AF;
+}
+
+.newsletter-submit {
+    background-color: #1F2937;
+    /* Dark navy */
+    color: white;
+    border: none;
+    padding: 0 24px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.newsletter-submit:hover {
+    background-color: #111827;
+}
+
+.newsletter-disclaimer {
+    font-size: 12px;
+    opacity: 0.8;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .newsletter-section {
+        padding: 56px 24px;
+    }
+
+    .newsletter-form {
+        flex-direction: column;
+        background: transparent;
+        box-shadow: none;
+        gap: 12px;
+    }
+
+    .newsletter-input {
+        border-radius: 8px;
+        width: 100%;
+    }
+
+    .newsletter-submit {
+        width: 100%;
+        padding: 16px;
+        border-radius: 8px;
+        justify-content: center;
+    }
+}

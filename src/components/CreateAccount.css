@@ -1,0 +1,294 @@
+.create-account-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+/* LEFT SECTION (IMAGE) */
+.create-account-container .image-section {
+    flex: 1;
+    display: flex;
+    padding: 24px;
+}
+
+.create-account-container .hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+}
+
+/* RIGHT SECTION (FORM) */
+.create-account-container .form-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 64px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* HEADER */
+.create-account-container .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 60px;
+    width: 100%;
+}
+
+.create-account-container .back-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-gray);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.create-account-container .back-link:hover {
+    color: var(--text-dark);
+}
+
+.create-account-container .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.create-account-container .brand-logo {
+    background-color: var(--primary-color);
+    color: white;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.create-account-container .brand-name {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+/* CONTENT CENTERED */
+.create-account-container .form-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 440px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.create-account-container h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    margin-bottom: 12px;
+    color: #111827;
+}
+
+.create-account-container .subtitle {
+    color: var(--text-gray);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+.create-account-container .signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.create-account-container .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.create-account-container .input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.create-account-container .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.create-account-container .input-icon {
+    position: absolute;
+    left: 14px;
+    color: #9CA3AF;
+}
+
+.create-account-container .input-wrapper input {
+    width: 100%;
+    padding: 12px 14px 12px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.create-account-container .input-wrapper input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(230, 90, 46, 0.1);
+}
+
+.create-account-container .input-wrapper input::placeholder {
+    color: #9CA3AF;
+    font-size: 14px;
+}
+
+.create-account-container .toggle-password-btn {
+    position: absolute;
+    right: 14px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #9CA3AF;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.create-account-container .toggle-password-btn:hover {
+    color: var(--text-dark);
+}
+
+.create-account-container .input-hint {
+    font-size: 12px;
+    color: #6B7280;
+    margin-top: 2px;
+}
+
+.create-account-container .submit-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    margin-top: 4px;
+}
+
+.create-account-container .submit-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.create-account-container .submit-btn:active {
+    transform: scale(0.98);
+}
+
+/* DIVIDER */
+.create-account-container .divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 24px 0;
+}
+
+.create-account-container .divider::before,
+.create-account-container .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.create-account-container .divider span {
+    padding: 0 16px;
+    color: #6B7280;
+    font-size: 13px;
+}
+
+/* SOCIAL BUTTON */
+.create-account-container .social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: white;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.create-account-container .social-btn:hover {
+    background-color: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+/* SIGN IN PROMPT */
+.create-account-container .signin-prompt {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+.create-account-container .signin-prompt a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.create-account-container .signin-prompt a:hover {
+    text-decoration: underline;
+}
+
+/* FOOTER */
+.create-account-container .form-footer {
+    text-align: center;
+    font-size: 12px;
+    color: #6B7280;
+    margin-top: auto;
+    padding-top: 24px;
+    line-height: 1.6;
+}
+
+.create-account-container .form-footer a {
+    color: #6B7280;
+    text-decoration: underline;
+    text-decoration-color: #D1D5DB;
+    text-underline-offset: 3px;
+}
+
+.create-account-container .form-footer a:hover {
+    color: var(--text-dark);
+    text-decoration-color: var(--text-dark);
+}
+
+/* RESPONSIVENESS */
+@media (max-width: 900px) {
+    .create-account-container .image-section {
+        display: none;
+    }
+
+    .create-account-container .form-section {
+        padding: 32px 24px;
+    }
+}
