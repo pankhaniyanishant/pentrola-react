@@ -12,6 +12,46 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/categories', async (req, res) => {
+    try {
+        const categories = await Product.aggregate([
+            { $group: { _id: '$category', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]);
+        res.json(categories.filter(c => c._id));
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/bestsellers', async (req, res) => {
+    try {
+        const products = await Product.find({ isBestseller: true }).limit(4);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/newarrivals', async (req, res) => {
+    try {
+        const products = await Product.find({}).sort({ createdAt: -1 }).limit(4);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/all', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 4;
+        const products = await Product.find({}).limit(limit);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 router.post('/', protect, admin, async (req, res) => {
     try {
         const product = new Product(req.body);

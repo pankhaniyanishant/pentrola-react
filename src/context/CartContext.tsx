@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, type ReactNode } from 'react';
 import { api } from '../services/api';
+import { useAuth } from './AuthContext';
 
 
 
@@ -32,6 +33,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const { isLoggedIn } = useAuth();
 
     // Load cart from API or local storage
     useEffect(() => {
@@ -55,18 +57,35 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }, []);
 
-    // Persist cart to API and local storage whenever it changes
+// Persist cart to API and local storage whenever it changes
     useEffect(() => {
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
         const userStr = localStorage.getItem('user');
-        if (userStr) {
-            const user = JSON.parse(userStr);
-            api.post(`/cart/${user.uid}`, { items: cartItems })
-                .catch(err => console.error('Error saving cart', err));
+        if (userStr && cartItems.length > 0) {
+            try {
+                const user = JSON.parse(userStr);
+                const sanitizedItems = cartItems.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    price: Number(item.price) || 0,
+                    image: item.image || '',
+                    quantity: Number(item.quantity) || 1,
+                    category: item.category || '',
+                    stock: Number(item.stock) || 0
+                }));
+                api.post(`/cart/${user.uid}`, { items: sanitizedItems })
+                    .catch(err => console.error('Error saving cart', err));
+            } catch (e) {
+                console.error('Error parsing user', e);
+            }
         }
     }, [cartItems]);
 
     const addToCart = (item: CartItem) => {
+        if (!isLoggedIn) {
+            alert('Please sign in to add items to cart');
+            return;
+        }
         setCartItems(prevItems => {
             const existingItem = prevItems.find(i => i.id === item.id);
             if (existingItem) {

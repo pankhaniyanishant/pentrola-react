@@ -1,18 +1,46 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CategoryGrid.css';
+import { getCategories, type ProductCategory } from '../services/adminApi';
+
+const fallbackCategories = [
+    { _id: 'INTERIOR TOY', count: 0 },
+    { _id: 'BRUSHES & TOOLS', count: 0 },
+    { _id: 'SPRAY PAINT', count: 0 },
+    { _id: 'Top Rated', count: 0 },
+];
 
 const CategoryGrid = () => {
     const navigate = useNavigate();
+    const [categories, setCategories] = useState<ProductCategory[]>(fallbackCategories);
+    const [loading, setLoading] = useState(true);
 
-    const categories = [
-        { id: 1, title: 'INTERIOR TOY', count: '120+ Products', image: '/cat-toys.png' },
-        { id: 2, title: 'BRUSHES & TOOLS', count: '85+ Products', image: '/educational-toys.png' },
-        { id: 3, title: 'SPRAY PAINT', count: '60+ Products', image: '/kids-playing.png' },
-        { id: 4, title: 'Top Rated', count: '200+ Products', image: '/smart-sequence.png' },
-    ];
+    useEffect(() => {
+        const fetchCategories = async () => {
+            setLoading(true);
+            try {
+                const data = await getCategories();
+                if (data && data.length > 0) {
+                    setCategories(data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch categories:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const handleCategoryClick = (categoryTitle: string) => {
         navigate(`/products?category=${encodeURIComponent(categoryTitle)}`);
+    };
+
+    const categoryImages: Record<string, string> = {
+        'INTERIOR TOY': '/cat-toys.png',
+        'BRUSHES & TOOLS': '/educational-toys.png',
+        'SPRAY PAINT': '/kids-playing.png',
+        'Top Rated': '/smart-sequence.png',
     };
 
     return (
@@ -30,24 +58,35 @@ const CategoryGrid = () => {
                 </button>
             </div>
 
+            {loading ? (
+                <div className="category-grid">
+                    {[1,2,3,4].map(i => (
+                        <div key={i} style={{ padding: '1rem', animation: 'pulse 1.5s infinite' }}>
+                            <div style={{ height: '200px', background: '#E5E7EB', borderRadius: '8px', marginBottom: '1rem' }}></div>
+                            <div style={{ height: '20px', background: '#E5E7EB', borderRadius: '4px', width: '80%' }}></div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
             <div className="category-grid">
                 {categories.map((category) => (
                     <div
-                        key={category.id}
+                        key={category._id}
                         className="category-card"
-                        onClick={() => handleCategoryClick(category.title)}
+                        onClick={() => handleCategoryClick(category._id)}
                         style={{ cursor: 'pointer' }}
                     >
                         <div className="category-image-container">
-                            <img src={category.image} alt={category.title} />
+                            <img src={categoryImages[category._id] || '/cat-toys.png'} alt={category._id} />
                         </div>
                         <div className="category-info">
-                            <h3 style={{ textTransform: 'uppercase' }}>{category.title}</h3>
-                            <p>{category.count}</p>
+                            <h3 style={{ textTransform: 'uppercase' }}>{category._id}</h3>
+                            <p>{category.count}+ Products</p>
                         </div>
                     </div>
                 ))}
             </div>
+            )}
         </section>
     );
 };

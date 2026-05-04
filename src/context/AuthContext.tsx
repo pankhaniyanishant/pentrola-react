@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         saveUser(normalizeUser(data));
     };
 
-    return (
+return (
         <AuthContext.Provider value={{
             user,
             isLoggedIn: !!user,

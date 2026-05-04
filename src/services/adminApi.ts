@@ -175,3 +175,39 @@ export const getAnalytics = async (timeRange: string = '7d') => {
 export const deleteAdminUser = async (id: string) => {
     await api.delete(`/auth/users/${id}`);
 };
+
+export interface ProductCategory {
+    _id: string;
+    count: number;
+}
+
+export interface Product {
+    _id: string;
+    title: string;
+    price: number;
+    image?: string;
+    category?: string;
+    stock: number;
+    isBestseller?: boolean;
+    createdAt?: string;
+}
+
+export const getCategories = async () => {
+    const { data } = await api.get<ProductCategory[]>('/products/categories');
+    return data;
+};
+
+export const getBestsellers = async () => {
+    const { data } = await api.get<Product[]>('/products/bestsellers');
+    return data;
+};
+
+export const getProducts = async (limit: number = 4) => {
+    const { data } = await api.get<Product[]>(`/products/all?limit=${limit}`);
+    return data;
+};
+
+export const getNewArrivals = async () => {
+    const { data } = await api.get<Product[]>('/products/newarrivals');
+    return data;
+};

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, type ReactNode } from 'react';
 import { api } from '../services/api';
+import { useAuth } from './AuthContext';
 
 
 
@@ -26,6 +27,7 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 
 export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+    const { isLoggedIn } = useAuth();
 
 // Load wishlist from API or local storage
     useEffect(() => {
@@ -82,6 +84,10 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, [wishlistItems]);
 
     const addToWishlist = (item: WishlistItem) => {
+        if (!isLoggedIn) {
+            alert('Please sign in to add items to wishlist');
+            return;
+        }
         setWishlistItems(prev => {
             if (prev.find(i => i.id === item.id)) return prev;
             return [...prev, item];
@@ -95,6 +101,10 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
     const isInWishlist = (id: number | string) => wishlistItems.some(i => i.id === id);
 
     const toggleWishlist = (item: WishlistItem) => {
+        if (!isLoggedIn) {
+            alert('Please sign in to add items to wishlist');
+            return;
+        }
         if (isInWishlist(item.id)) {
             removeFromWishlist(item.id);
         } else {

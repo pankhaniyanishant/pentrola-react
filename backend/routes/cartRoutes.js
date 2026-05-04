@@ -20,17 +20,25 @@ router.post('/:userId', async (req, res) => {
     try {
         const { items } = req.body;
         
+        if (!items || !Array.isArray(items)) {
+            return res.status(400).json({ message: 'Invalid items data' });
+        }
+        
         for (const item of items) {
             try {
-                const product = await Product.findById(item.id);
-                if (product) {
-                    const currentQty = item.quantity || 1;
-                    if (currentQty > product.stock) {
-                        return res.status(400).json({ 
-                            message: `Only ${product.stock} items available in stock for "${product.title}"`,
-                            maxStock: product.stock,
-                            itemId: item.id
-                        });
+                const itemId = item.id;
+                // Only validate stock if the id looks like a valid MongoDB ObjectId
+                if (itemId && mongoose.Types.ObjectId.isValid(itemId)) {
+                    const product = await Product.findById(itemId);
+                    if (product) {
+                        const currentQty = item.quantity || 1;
+                        if (currentQty > product.stock) {
+                            return res.status(400).json({ 
+                                message: `Only ${product.stock} items available in stock for "${product.title}"`,
+                                maxStock: product.stock,
+                                itemId: item.id
+                            });
+                        }
                     }
                 }
             } catch (e) {

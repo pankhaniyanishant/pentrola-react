@@ -1,15 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import './CartDrawer.css';
 
 const CartDrawer: React.FC = () => {
     const { isCartOpen, toggleCart, cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
+    const { isLoggedIn } = useAuth();
     const navigate = useNavigate();
 
     const handleCheckout = () => {
-        toggleCart(); // Close the drawer
-        navigate('/checkout'); // Navigate to checkout page
+        if (!isLoggedIn) {
+            alert('Please sign in to proceed to checkout');
+            toggleCart();
+            navigate('/signin');
+            return;
+        }
+        toggleCart();
+        navigate('/checkout');
     }
 
     if (!isCartOpen) return null;
@@ -78,7 +86,9 @@ const CartDrawer: React.FC = () => {
                             <span>₹{cartTotal.toLocaleString()}</span>
                         </div>
                         <p className="cart-taxes-notice">Taxes and shipping calculated at checkout.</p>
-                        <button className="checkout-btn" onClick={handleCheckout}>Proceed to Checkout</button>
+                        <button className="checkout-btn" onClick={handleCheckout} disabled={!isLoggedIn}>
+                            {isLoggedIn ? 'Proceed to Checkout' : 'Sign in to Checkout'}
+                        </button>
                     </div>
                 )}
             </div>

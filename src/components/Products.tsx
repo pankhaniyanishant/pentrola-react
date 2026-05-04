@@ -39,15 +39,18 @@ const Products = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOption, setSortOption] = useState('featured');
     const [initialProducts, setInitialProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
     const activeCategory = searchParams.get('category') || 'All';
 
     useEffect(() => {
+        setLoading(true);
         api.get('/products')
             .then(({ data }) => {
                 const mapped = (Array.isArray(data) ? data : []).map((item) => normalizeProduct(item as Partial<Product> & { _id?: string }));
                 setInitialProducts(mapped);
             })
-            .catch(console.error);
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, []);
 
     const categories = useMemo(() => {
@@ -156,6 +159,17 @@ const Products = () => {
                 </div>
 
                 <div className="products-grid-container">
+                    {loading ? (
+                        <div className="products-grid">
+                            {[1,2,3,4,5,6,7,8].map(i => (
+                                <div key={i} style={{ padding: '1rem', animation: 'pulse 1.5s infinite' }}>
+                                    <div style={{ height: '200px', background: '#E5E7EB', borderRadius: '8px', marginBottom: '1rem' }}></div>
+                                    <div style={{ height: '20px', background: '#E5E7EB', borderRadius: '4px', width: '80%' }}></div>
+                                    <div style={{ height: '16px', background: '#E5E7EB', borderRadius: '4px', width: '50%', marginTop: '8px' }}></div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
                     <div className="products-grid">
                         {filteredProducts.length === 0 ? (
                             <div className="no-products" style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '3rem' }}>
@@ -236,6 +250,7 @@ const Products = () => {
                             ))
                         )}
                     </div>
+                    )}
                 </div>
             </main>
 
