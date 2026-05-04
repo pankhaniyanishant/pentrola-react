@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get('/:userId', async (req, res) => {
     try {
-        let wishlist = await Wishlist.findOne({ user: req.params.userId }).populate('items.product');
+        let wishlist = await Wishlist.findOne({ user: req.params.userId });
         if (!wishlist) {
             wishlist = await Wishlist.create({ user: req.params.userId, items: [] });
         }
@@ -18,9 +18,9 @@ router.post('/:userId', async (req, res) => {
     try {
         let wishlist = await Wishlist.findOne({ user: req.params.userId });
         if (!wishlist) {
-            wishlist = new Wishlist({ user: req.params.userId, items: req.body.items });
+            wishlist = new Wishlist({ user: req.params.userId, items: req.body.items || [] });
         } else {
-            wishlist.items = req.body.items;
+            wishlist.items = req.body.items || [];
         }
         const updatedWishlist = await wishlist.save();
         res.json(updatedWishlist);

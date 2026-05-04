@@ -27,16 +27,30 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
 
-    // Load wishlist from API or local storage
+// Load wishlist from API or local storage
     useEffect(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
+            console.log('Loading wishlist for user:', user.uid);
             api.get(`/wishlist/${user.uid}`)
                 .then(({ data }) => {
-                    if (data && data.items) setWishlistItems(data.items);
+                    console.log('Wishlist loaded from API:', data);
+                    if (data && data.items && Array.isArray(data.items)) {
+                        setWishlistItems(data.items);
+                    }
                 })
-                .catch(err => console.error('Error loading wishlist', err));
+                .catch(err => {
+                    console.error('Error loading wishlist from API:', err);
+                    const storedWishlist = localStorage.getItem('wishlistItems');
+                    if (storedWishlist) {
+                        try {
+                            setWishlistItems(JSON.parse(storedWishlist));
+                        } catch {
+                            setWishlistItems([]);
+                        }
+                    }
+                });
         } else {
             const storedWishlist = localStorage.getItem('wishlistItems');
             if (storedWishlist) {
@@ -49,14 +63,21 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     }, []);
 
-    // Persist wishlist to API and local storage whenever it changes
+// Persist wishlist to API and local storage whenever it changes
     useEffect(() => {
         localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
+        console.log('useEffect triggered, wishlistItems:', wishlistItems);
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
+            if (wishlistItems.length > 0) {
+                console.log('Saving NON-EMPTY wishlist for user:', user.uid, 'items:', wishlistItems);
+            }
             api.post(`/wishlist/${user.uid}`, { items: wishlistItems })
-                .catch(err => console.error('Error saving wishlist', err));
+                .then(({ data }) => {
+                    console.log('Wishlist saved to API:', data);
+                })
+                .catch(err => console.error('Error saving wishlist to API:', err));
         }
     }, [wishlistItems]);
 
